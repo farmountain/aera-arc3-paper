@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+title: "Explore Before You Solve: The [Speed, Depth] Commutator and RHAE-Optimal Epistemic Agents for ARC-AGI-3"
+authors:
+  - family-names: "[Author family name]"
+    given-names: "[Author given name]"
+type: software
+license: CC0-1.0
+repository-code: "https://github.com/farmountain/aera-arc3-paper"
+url: "https://github.com/farmountain/aera-arc3-paper"
+abstract: >
+  AERA (Adaptive Epistemic Reasoning Agent) decouples ARC-AGI-3 task solving
+  into structured exploration, hypothesis verification, and committed execution.
+  RHAE is shown to be a measurement of the [Speed, Depth] commutator.
+  All code released under CC0.
+keywords:
+  - ARC-AGI
+  - program synthesis
+  - epistemic agents
+  - exploration
+  - POMDP
+date-released: "2026-05-12"

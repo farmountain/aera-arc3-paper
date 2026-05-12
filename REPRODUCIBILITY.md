@@ -1,6 +1,7 @@
 # Reproducibility Guide
 
 **Paper:** Explore Before You Solve: The [Speed, Depth] Commutator and RHAE-Optimal Epistemic Agents for ARC-AGI-3
+**Repository:** https://github.com/farmountain/aera-arc3-paper
 
 All code is released under CC0. The primary claim (AERA RHAE > no-explore baseline) can be reproduced with the exact commands below. Target: complete reproduction in under 30 minutes on a consumer GPU.
 

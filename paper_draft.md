@@ -2,7 +2,7 @@
 
 **Authors:** [Author names]
 **Venue:** ARC Prize 2026 Paper Track
-**Code:** [GitHub URL] (CC0 license)
+**Code:** https://github.com/farmountain/aera-arc3-paper (CC0 license)
 **Status:** Draft v0.1 — 2026-05-11
 
 ---
