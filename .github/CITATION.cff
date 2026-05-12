@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 title: "Explore Before You Solve: The [Speed, Depth] Commutator and RHAE-Optimal Epistemic Agents for ARC-AGI-3"
 authors:
-  - family-names: "[Author family name]"
-    given-names: "[Author given name]"
+  - family-names: "Liew"
+    given-names: "Keong Han"
 type: software
 license: CC0-1.0
 repository-code: "https://github.com/farmountain/aera-arc3-paper"

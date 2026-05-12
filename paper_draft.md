@@ -1,6 +1,6 @@
 # Explore Before You Solve: The [Speed, Depth] Commutator and RHAE-Optimal Epistemic Agents for ARC-AGI-3
 
-**Authors:** [Author names]
+**Authors:** Keong Han Liew
 **Venue:** ARC Prize 2026 Paper Track
 **Code:** https://github.com/farmountain/aera-arc3-paper (CC0 license)
 **Status:** Draft v0.1 — 2026-05-11
