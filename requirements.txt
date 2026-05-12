@@ -1,0 +1,15 @@
+# ARC-AGI-3 AERA agent dependencies (pinned for reproducibility)
+# Generated 2026-05-12. Use these exact versions to reproduce paper results.
+#
+# Install: pip install -r requirements.txt
+# Or: docker build -t aera-arc3 . (uses this file automatically)
+
+# ARC-AGI-3 environment (installs arc_agi + arcengine)
+arc-agi==0.9.8
+
+# Local LLM inference — CPU+GPU via llama.cpp bindings
+# Build with CUDA: CMAKE_ARGS="-DLLAMA_CUDA=on" pip install llama-cpp-python==0.2.90
+llama-cpp-python==0.2.90
+
+# Standard utilities (no additional deps needed beyond stdlib)
+tqdm==4.66.4
