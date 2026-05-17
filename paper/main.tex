@@ -29,13 +29,13 @@ RHAE-Optimal Epistemic Agents for ARC-AGI-3}
 
 \author{Keong Han Liew\thanks{Independent researcher. Contact: \texttt{farmountain@gmail.com}. Code: \url{https://github.com/farmountain/aera-arc3-paper} (CC0).}}
 
-\date{2026-05-17 \quad (Draft v0.2)}
+\date{2026-05-18 \quad (Draft v0.3, post-mirofish persona review)}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-We present a theoretical framework unifying two apparently separate quantities: the RHAE (Relative Human Action Efficiency) metric used to score ARC-AGI-3 submissions, and the mathematical notion of a commutator between competing objectives. We show that RHAE is structurally a measurement of the [Speed, Depth] commutator --- the inherent trade-off between executing actions quickly and gathering information deeply. From this identification we derive a principled design for AERA (Adaptive Epistemic Reasoning Agent), which decouples task solving into three sequential phases: structured exploration (Depth mode), hypothesis verification (transition), and committed execution (Speed mode). AERA's adaptive exploration budget is derived analytically as the Pareto-optimal operating point on the [Speed, Depth] frontier, rather than set as a heuristic. On ARC-AGI-3 (5 public games, Qwen2.5-0.5B), agents that skip exploration achieve $\text{RHAE}=0.0000$ while AERA achieves $\text{RHAE}=0.5290$ (budget=1), confirming exploration is necessary. A budget ablation reveals a non-monotonic RHAE curve ($b{=}0$: $0.0000$, $b{=}1$: $0.5290$, $b{=}3$: $0.2645$, $b{=}5$: $0.5290$), showing optimal exploration budget depends on environment information structure. With a stronger model (Qwen2.5-1.5B), the no-explore baseline achieves $\text{RHAE}=0.2645$ by solving FT09 through planning alone --- revealing a model capability $\times$ exploration interaction: exploration is necessary for weak models and increasingly optional for stronger models on easy games. All code is released under CC0.
+We propose a framework that interprets the RHAE (Relative Human Action Efficiency) metric used to score ARC-AGI-3 submissions as a quadratic penalty for deviating from the Pareto frontier of a Speed--Depth trade-off: Speed = actions$^{-1}$, Depth = information gain per action. The quadratic form falls out of a Taylor expansion under an assumed convex frontier (assumption A1); we state the assumption explicitly rather than prove it. From this interpretation we describe AERA (Adaptive Epistemic Reasoning Agent), a three-phase (EXPLORE / VERIFY / PLAN) agent whose exploration budget is set as an empirical heuristic ($\approx 40\%$ of human level-1 actions). We then report a small-scale empirical study on 5 of the 25 public ARC-AGI-3 games using Qwen2.5-0.5B and 1.5B (CPU FP32). On this 5-game subset, the no-explore baseline (B1) achieves $\text{RHAE}=0.0000$ at 0.5B (PLAN produces 0 actions without a world model) and $\text{RHAE}=0.2645$ at 1.5B (planning alone solves FT09). The best AERA configuration (0.5B, exploration budget = 1) reaches $\text{RHAE}=0.5290$; FT09 is consistently solved in 1 action via an \texttt{ACTION6} event that we believe is the environment's win trigger. A budget ablation across $b \in \{0,1,3,5\}$ produces a non-monotonic curve, which we interpret as a finite-sample artifact under A1. The numbers are not comparable to the full 55-game competition leaderboard (community best $\approx 12.58\%$ at time of writing). The contribution is the framework and the small-n evidence pointing at a model-capability $\times$ exploration interaction, not a state-of-the-art system. All code and the LaTeX source are released under CC0.
 \end{abstract}
 
 \section{Introduction}
@@ -53,14 +53,18 @@ This paper makes three contributions:
 \item \textbf{Empirical: exploration is necessary.} On five public ARC-AGI-3 games with Qwen2.5-0.5B, AERA achieves $\text{RHAE}{=}0.5290$ vs. $0.0000$ for the no-explore baseline. With Qwen2.5-1.5B the baseline rises to $0.2645$, revealing a model-capability $\times$ exploration interaction.
 \end{enumerate}
 
-The gap between 100\% human solve rate and $<$1\% AI solve rate on ARC-AGI-3 is not a gap in reasoning capability --- it is a gap in epistemic discipline.
+The gap between 100\% human solve rate and $<$1\% AI solve rate on ARC-AGI-3 is not a gap in reasoning capability; it is a gap in epistemic discipline.
+
+\paragraph{Notes on this work (author).} \textit{[Placeholder --- the author should replace this paragraph with their actual project history: what triggered the EXPLORE phase idea, which dead-end approaches preceded it, and the FT09 discovery story. The current text in the abstract and experiments was drafted with substantial AI writing assistance over verified experimental data; this paragraph is reserved for first-person provenance that only the human author can supply honestly. See \texttt{paper/ARXIV\_ENDORSEMENT\_REQUEST.md} for context.]}
+
+The FT09 result in \S\ref{sec:experiments} requires its own provenance note: across 4 independent runs, the 0.5B model triggers a logged \texttt{ACTION6} error immediately before \texttt{SOLVED}. The error-then-solve sequence was originally suspected to be a bug; it appears instead to be the win signal for this environment. The result is included with the mechanism stated, not suppressed, because the paper's claim is about exploration efficiency and the mechanism is therefore relevant.
 
 \section{Background}
 \label{sec:background}
 
 \subsection{ARC-AGI-3 Task Format}
 
-ARC-AGI-3 consists of turn-based environments rendered on $64{\times}64$ grids with $16$ possible cell values \cite{bonnet2026}. Each environment has multiple levels; the agent takes discrete actions (\texttt{ACTION1}--\texttt{ACTION5} directional/control, \texttt{ACTION6} cell-select, \texttt{ACTION7} undo) and receives grid-state observations. The win condition is never stated.
+ARC-AGI-3 consists of turn-based environments rendered on $64{\times}64$ grids with $16$ possible cell values \cite{arcprize2026}. Each environment has multiple levels; the agent takes discrete actions (\texttt{ACTION1}--\texttt{ACTION5} directional/control, \texttt{ACTION6} cell-select, \texttt{ACTION7} undo) and receives grid-state observations. The win condition is never stated.
 
 Performance is measured by RHAE:
 \begin{equation}
@@ -98,23 +102,22 @@ Exploration reduces $|\mathcal{H}_\text{support}|$ --- the number of rules consi
 
 The [Speed, Depth] Pareto frontier $\mathcal{F}_E$ is the set of Pareto-optimal policies. The commutator $[S, D]_E$ is the curvature of this frontier.
 
-\begin{theorem}[RHAE and the Pareto frontier]
-For policy $\pi$ in environment $E$ with human baseline $\pi_H$, under convexity of $\mathcal{F}_E$,
+\begin{proposition}[RHAE and the Pareto frontier]
+\label{prop:rhae-frontier}
+Assume (A1) that $\mathcal{F}_E$ is convex in $(\text{Speed}, \text{Depth})$ and (A2) that the RHAE cap $1.15$ is not binding (i.e., $A_E(\pi) \geq H_E / 1.15$). Then
 $$\text{RHAE}(\pi, E) = \left(\frac{H_E}{A_E(\pi)}\right)^2$$
-is maximized when $(\text{Speed}(\pi), \text{Depth}(\pi)) \in \mathcal{F}_E$.
-\end{theorem}
+is maximized when $(\text{Speed}(\pi), \text{Depth}(\pi)) \in \mathcal{F}_E$, and the loss for off-frontier policies is second-order in the frontier deviation.
+\end{proposition}
 
-\begin{remark}
-We claim RHAE has the \emph{mathematical structure} of a commutator penalty: it measures the cost of deviating from a Pareto-optimal (Speed, Depth) operating point. This is a structural analogy, not a claim about Lie-algebraic commutators. Both grow quadratically with deviation from optimum.
+\begin{remark}[Status of A1]
+Assumption (A1) is not proved in this work. Convexity of a Pareto frontier in a finite-action discrete-information setting is environment-dependent and is plausible but not automatic. We use ``commutator'' as a \emph{structural analogy} for the quadratic deviation cost --- not as a claim about Lie-algebraic commutators. Proposition~\ref{prop:rhae-frontier} should be read as a model of why RHAE behaves quadratically under (A1), not as a derived identity.
 \end{remark}
 
-\begin{proof}[Proof sketch]
-The human baseline $\pi_H$ lies on $\mathcal{F}_E$ by definition: ARC-AGI-3 calibration participants had no prior exposure \cite[\S3.2]{bonnet2026}, so their action sequences represent first-contact optimal behavior. A policy deviating from $\mathcal{F}_E$ has $A_E(\pi) > H_E$. Convexity of $\mathcal{F}_E$ yields quadratic deviation cost via Taylor expansion. $\qed$
+\begin{proof}[Proof sketch under (A1), (A2)]
+A policy off $\mathcal{F}_E$ is Pareto-dominated, so $A_E(\pi) > H_E$. Taylor-expanding RHAE around the frontier point under (A1) yields quadratic deviation cost. (A2) ensures we are in the un-capped regime. $\qed$
 \end{proof}
 
-\begin{corollary}[Optimal exploration budget]
-The RHAE-maximizing policy allocates an exploration budget $B^* \approx \alpha \cdot H_{E,1}$ where $\alpha \approx 0.4$ is the empirical Pareto-optimal exploration fraction.
-\end{corollary}
+\paragraph{Empirical heuristic: $\alpha \approx 0.4$.} Across the budget ablation in \S\ref{sec:budget} (n=1 environment, 5 games, 4 budgets), the per-game observed sweet spot for exploration is approximately $40\%$ of the human-median action count for level 1. We use this as an \emph{operational heuristic}, not a derived result. The optimal value of $\alpha$ is environment-dependent (\S\ref{sec:budget} shows non-monotone behavior); a larger empirical study is required to estimate it.
 
 \begin{figure}[t]
 \centering
@@ -123,7 +126,7 @@ The RHAE-maximizing policy allocates an exploration budget $B^* \approx \alpha \
 \label{fig:pareto}
 \end{figure}
 
-Figure~\ref{fig:pareto} shows the frontier with the empirical budget points from \S\ref{sec:experiments}. The non-monotonic $b{=}3$ dip reflects finite-sample game-specific variance, not a theory contradiction (see Remark in \S\ref{sec:formal}).
+Figure~\ref{fig:pareto} shows the frontier with the empirical budget points from \S\ref{sec:experiments}. The non-monotonic $b{=}3$ dip reflects finite-sample game-specific variance under (A1); see \S\ref{sec:formal} for the smoothing-out conjecture.
 
 \subsection{Meta-Cognitive Uncertainty as Commutator Controller}
 
@@ -263,32 +266,23 @@ AERA $b{=}1$         & \textbf{0.5290} & 0.0000 & $+0.5290$ / $-0.2645$ \\
 \section{Theoretical Analysis}
 \label{sec:formal}
 
-\begin{lemma}
-The human baseline $H_E$ represents the Pareto-optimal operating point on the [Speed, Depth] frontier for environment $E$.
-\end{lemma}
+\begin{conjecture}[Human baseline as frontier proxy]
+\label{conj:human-frontier}
+The human-median action count $H_E$ provides a useful empirical proxy for an efficient operating point on the [Speed, Depth] frontier. We do not claim humans achieve the Pareto-optimum; we claim they approximate it well enough that $H_E$ is a defensible normalization in RHAE.
+\end{conjecture}
 
-\begin{proof}[Proof sketch]
-Calibration participants \cite[\S3.2]{bonnet2026} had no prior exposure. Cognitive-science evidence: humans explore before committing in program-induction tasks \cite{rule2020}; employ conservative information-efficient probing in causal reasoning \cite{bramley2017}; follow Bayesian posterior updates in rule-learning \cite{tenenbaum2001}. Together these support that human ARC-AGI-3 calibration approximates the Pareto-optimal [Speed, Depth] trade-off. $\qed$
-\end{proof}
+\paragraph{Evidence (not proof).} Cognitive-science work shows humans (i) explore before committing in program-induction tasks \cite{rule2020}, (ii) use conservative information-efficient probing in causal reasoning \cite{bramley2017}, (iii) follow Bayesian posterior updates in rule-learning \cite{tenenbaum2001}. These results show humans behave \emph{like} efficient explorers; they do not directly measure Pareto-optimality. Conjecture~\ref{conj:human-frontier} is an empirical hypothesis, not a derived result.
 
-\begin{theorem}[Formal]
-Let $\mathcal{F}_E$ be the convex [Speed, Depth] Pareto frontier. The RHAE-maximizing policy $\pi^*$ satisfies $(\text{Speed}(\pi^*), \text{Depth}(\pi^*)) \in \mathcal{F}_E$.
-\end{theorem}
-
-\begin{proof}
-Any point not on $\mathcal{F}_E$ is Pareto-dominated, implying a policy with strictly lower action count at the same Depth. RHAE is strictly decreasing in $A_E$. Quadratic structure follows from Taylor expansion around the frontier point: for convex $\mathcal{F}_E$, distance from the frontier grows quadratically with deviation, yielding the $(H_E/A_E)^2$ form. $\qed$
-\end{proof}
-
-\begin{remark}[Reconciling theory with non-monotonic empirics]
-Table~\ref{tab:budget} shows $\text{RHAE}(b{=}1) = \text{RHAE}(b{=}5) > \text{RHAE}(b{=}3)$, superficially contradicting convexity. Theorem 1 holds for \emph{expected} RHAE over the full game distribution. The 5-game curve is discrete and non-smooth because each game is a binary solve event. The $b{=}3$ dip reflects that, for this game set, $b{=}3$ falls just below the solve threshold for the second solvable game, while $b{=}5$ crosses it. With a larger game set the empirical curve smooths toward the convex theoretical frontier. Supporting evidence: R11L entropy \emph{increases} at $b{=}3$ (0.381$\to$0.834) --- a finite-sample information anomaly that would average out.
+\begin{remark}[Status of the non-monotonic empirics]
+Table~\ref{tab:budget} shows $\text{RHAE}(b{=}1) = \text{RHAE}(b{=}5) > \text{RHAE}(b{=}3)$. Under assumption (A1) of Proposition~\ref{prop:rhae-frontier}, this is a finite-sample artifact: with only 5 games each contributing a binary solve event, the empirical curve is non-smooth. With a larger game set we expect smoothing toward the (A1)-implied shape. We do \emph{not} claim this resolves the discrepancy; (A1) itself may fail on these environments, in which case a non-convex frontier is the correct interpretation. Supporting evidence for the finite-sample reading: R11L entropy rises at $b{=}3$ (0.381$\to$0.834), a per-game anomaly that would average out over many games.
 \end{remark}
 
 \section{Related Work}
 \label{sec:related}
 
-\paragraph{ARC-AGI benchmarks.} Chollet \cite{chollet2019} introduced ARC as a measure of fluid intelligence. ARC-AGI-1 and ARC-AGI-2 are static; ARC-AGI-3 \cite{bonnet2026} introduces interactivity. Our work is the first formal account of why RHAE penalizes inefficiency quadratically.
+\paragraph{ARC-AGI benchmarks.} Chollet \cite{chollet2019} introduced ARC as a measure of fluid intelligence. ARC-AGI-1 and ARC-AGI-2 are static; ARC-AGI-3 \cite{arcprize2026} introduces interactivity. Our work is the first formal account of why RHAE penalizes inefficiency quadratically.
 
-\paragraph{2025 ARC Prize winners.} TRM (1st, \cite{trm2025}), SOAR (2nd, \cite{soar2025}), CompressARC (3rd, \cite{compressarc2025}) all operate on static ARC-AGI-2. TRM's recursive refinement is structurally analogous to AERA's VERIFY phase; AERA adds a world-model acquisition phase before TRM-style planning. The two approaches are complementary.
+\paragraph{2025 ARC Prize Paper Award.} TRM \cite{trm2025} (1st, 7M-parameter recursive model, $\sim$45\% on ARC-AGI-1, $\sim$8\% on ARC-AGI-2); SOAR \cite{soar2025} (2nd, self-generated search-trace fine-tuning, up to $\sim$52\% on ARC-AGI-1); CompressARC \cite{compressarc2025} (3rd, MDL single-puzzle code-golf, $\sim$20--34\% on ARC-AGI-1) all target static ARC-AGI-1/2. None addresses interactive environments or RHAE. TRM's recursive refinement is structurally analogous to AERA's VERIFY phase; AERA adds a world-model acquisition phase before TRM-style planning. The two approaches are complementary. See also the ARC Prize 2025 Technical Report \cite{arcprize2025}.
 
 \paragraph{Active learning.} MacKay \cite{mackay1992} introduced information-based objective functions; Settles \cite{settles2010} surveyed pool-based AL. Our EXPLORE is closer to stream-based AL where the stream is the agent's own action sequence.
 
@@ -303,7 +297,7 @@ Table~\ref{tab:budget} shows $\text{RHAE}(b{=}1) = \text{RHAE}(b{=}5) > \text{RH
 
 Chollet \cite{chollet2019} defines intelligence as skill-acquisition efficiency normalized by prior knowledge and experience. RHAE operationalizes this. Cognitive-science evidence \cite{rule2020,bramley2017} shows humans in rule-induction tasks systematically explore before committing, with queries near-optimal under Bayesian information-gain criteria, while implicitly pricing in action cost --- the Pareto-optimal [Speed, Depth] behavior.
 
-Current LLMs are trained to minimize perplexity over text, rewarding fast confident answers. This creates System 1 responses \cite{kahneman2011} where System 2 deliberation is needed. AERA surgically installs the missing mechanism: an explicit exploration phase governed by belief entropy.
+Current LLMs are trained to minimize next-token cross-entropy on text corpora; this objective rewards confident continuations and is not aligned with the explore-then-commit behavior required by interactive rule-induction benchmarks. AERA installs the missing mechanism explicitly: an exploration phase governed by belief entropy, gated by a commitment threshold.
 
 \subsection{Limitations}
 
@@ -327,10 +321,9 @@ ARC-AGI-3 environments are procedurally novel by design and cannot be memorized 
 All code and experimental artifacts are CC0.
 
 \begin{thebibliography}{99}
-\bibitem{bonnet2026} Bonnet, C.\ et al.\ (2026). ARC-AGI-3: A New Challenge for Frontier Agentic Intelligence. \textit{arXiv:2603.24621}.
+\bibitem{arcprize2026} ARC Prize Foundation. (2026). ARC-AGI-3: A New Challenge for Frontier Agentic Intelligence. \textit{arXiv:2603.24621}.
 \bibitem{chollet2019} Chollet, F.\ (2019). On the Measure of Intelligence. \textit{arXiv:1911.01547}.
 \bibitem{kaelbling1998} Kaelbling, L.P., Littman, M.L., \& Cassandra, A.R.\ (1998). Planning and Acting in Partially Observable Stochastic Domains. \textit{Artificial Intelligence}, 101(1-2), 99--134.
-\bibitem{kahneman2011} Kahneman, D.\ (2011). \textit{Thinking, Fast and Slow}. Farrar, Straus and Giroux.
 \bibitem{mackay1992} MacKay, D.J.C.\ (1992). Information-Based Objective Functions for Active Data Selection. \textit{Neural Computation}, 4(4), 590--604.
 \bibitem{settles2010} Settles, B.\ (2010). Active Learning Literature Survey. \textit{Univ.\ Wisconsin--Madison TR 1648}.
 \bibitem{spaan2012} Spaan, M.T.J.\ (2012). Partially Observable Markov Decision Processes. \textit{Reinforcement Learning: State of the Art}, 387--414.
@@ -340,9 +333,10 @@ All code and experimental artifacts are CC0.
 \bibitem{tenenbaum2001} Tenenbaum, J.B.\ \& Griffiths, T.L.\ (2001). Generalization, Similarity, and Bayesian Inference. \textit{Behavioral and Brain Sciences}, 24(4), 629--640.
 \bibitem{friston2010} Friston, K.\ (2010). The free-energy principle: a unified brain theory? \textit{Nature Reviews Neuroscience}, 11(2), 127--138.
 \bibitem{lake2015} Lake, B.M., Salakhutdinov, R., \& Tenenbaum, J.B.\ (2015). Human-level concept learning through probabilistic program induction. \textit{Science}, 350(6266), 1332--1338.
-\bibitem{trm2025} Jolicoeur-Martineau, A.\ (2025). Less is More: Recursive Reasoning with Tiny Networks (TRM). \textit{ARC Prize 2025 Technical Report, 1st prize entry}.
-\bibitem{soar2025} Aky\"urek, E.\ et al.\ (2025). Self-Improving Language Models for Evolutionary Program Synthesis (SOAR). \textit{ARC Prize 2025 Technical Report, 2nd prize entry}.
-\bibitem{compressarc2025} Liu, I.\ et al.\ (2025). CompressARC: Minimum Description Length for ARC. \textit{ARC Prize 2025 Technical Report, 3rd prize entry}.
+\bibitem{trm2025} Jolicoeur-Martineau, A.\ (2025). Less is More: Recursive Reasoning with Tiny Networks. \textit{arXiv:2510.04871}. ARC Prize 2025 Paper Award, 1st place.
+\bibitem{soar2025} Pourcel, J.\ et al.\ (2025). Self-Improving Language Models for Evolutionary Program Synthesis: A Case Study on ARC-AGI. ARC Prize 2025 Paper Award, 2nd place.
+\bibitem{compressarc2025} Liao, I.\ et al.\ (2025). CompressARC: An MDL-Based Single-Puzzle Neural System for ARC. ARC Prize 2025 Paper Award, 3rd place.
+\bibitem{arcprize2025} Chollet, F., Knoop, M., Kamradt, G., \& Landers, B.\ (2026). ARC Prize 2025: Technical Report. \textit{arXiv:2601.10904}.
 \end{thebibliography}
 
 \end{document}

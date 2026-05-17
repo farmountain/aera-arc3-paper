@@ -6,8 +6,9 @@
    endorsement code if your account is not yet endorsed for `cs.AI`.
 2. Identify a potential endorser: any author with ≥2 recent papers in `cs.AI`
    (or `cs.LG`) on arxiv. Good targets:
-   - Co-authors on cited papers (Bonnet et al. 2026 ARC-AGI-3 team; Lake;
-     Tenenbaum; Chollet).
+   - Authors on cited papers: François Chollet, Mike Knoop, Gregory Kamradt,
+     Bryan Landers (ARC Prize 2025 Technical Report); Alexia Jolicoeur-Martineau
+     (TRM); Brenden Lake; Joshua Tenenbaum.
    - Active ARC-AGI researchers on arxiv in the last 12 months.
    - Faculty at universities you have any prior contact with.
 3. Email the endorser with the message below. Include your arxiv endorsement
@@ -89,7 +90,7 @@ under CC0 at https://github.com/farmountain/aera-arc3-paper. Reproduction
 of the primary claim takes under 40 minutes on a single GPU.
 
 **Why I selected you.** [One specific sentence — e.g., "Your 2026 paper on
-ARC-AGI-3 (Bonnet et al., arXiv:2603.24621) is the foundation of this
+ARC-AGI-3 (ARC Prize Foundation, arXiv:2603.24621) is the foundation of this
 work, and Lemma 1 cites your §3.2 directly", or "Your work on
 probabilistic program induction (Lake et al. 2015) is cited in the related
 work."]

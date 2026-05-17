@@ -3,7 +3,7 @@
 **Authors:** Keong Han Liew
 **Venue:** ARC Prize 2026 Paper Track
 **Code:** https://github.com/farmountain/aera-arc3-paper (CC0 license)
-**Status:** Draft v0.2 — 2026-05-17
+**Status:** Draft v0.3 — 2026-05-18. **Canonical version: [`paper/main.tex`](paper/main.tex).** This markdown is the working draft; the LaTeX source contains the v0.3 demotions (Theorem 1 → Proposition under explicit assumption A1, Lemma 1 → Conjecture, Corollary 1 → empirical heuristic) and the FT09 mechanism provenance note. Sync this markdown to .tex before any external distribution.
 
 ---
 
@@ -23,13 +23,13 @@ Current state-of-the-art agents treat ARC-AGI-3 as a one-shot inference problem:
 
 This paper makes three contributions:
 
-**1. Theoretical: RHAE as commutator measurement.** We show that RHAE is a direct measurement of the [Speed, Depth] commutator — the curvature of the Pareto frontier between action efficiency (Speed) and information gain per action (Depth). This identification gives RHAE a theoretical foundation it has lacked since its introduction (Bonnet et al., 2026). The commutator framework predicts exactly why RHAE penalizes inefficiency quadratically: because the Pareto frontier of the [Speed, Depth] trade-off is convex, deviations from the frontier incur second-order losses.
+**1. Theoretical: RHAE as commutator measurement.** We show that RHAE is a direct measurement of the [Speed, Depth] commutator — the curvature of the Pareto frontier between action efficiency (Speed) and information gain per action (Depth). This identification gives RHAE a theoretical foundation it has lacked since its introduction (ARC Prize Foundation, 2026). The commutator framework predicts exactly why RHAE penalizes inefficiency quadratically: because the Pareto frontier of the [Speed, Depth] trade-off is convex, deviations from the frontier incur second-order losses.
 
 **2. Architectural: AERA.** We introduce AERA (Adaptive Epistemic Reasoning Agent), a three-phase architecture whose design follows directly from the commutator analysis. The EXPLORE phase maximizes information gain per action (Depth mode). The VERIFY phase confirms the winning hypothesis. The PLAN phase minimizes action count (Speed mode). AERA's adaptive exploration budget — set to approximately 40% of the human baseline for the first level — is derived from the commutator's Pareto-optimal point, not from hyperparameter tuning.
 
 **3. Empirical: exploration is necessary.** We run ablations on five public ARC-AGI-3 environments comparing AERA to a no-exploration baseline (identical architecture with the EXPLORE phase disabled). AERA achieves significantly higher RHAE, with the gain concentrated on tasks where the initial observation is ambiguous — precisely where the [Speed, Depth] commutator predicts exploration will help most.
 
-Our analysis also reveals why human performance on ARC-AGI-3 is near-perfect (100% solve rate, Bonnet et al. 2026) while current AI systems score below 1%. Humans instinctively operate near the Pareto frontier of [Speed, Depth]. They probe efficiently, update their model, and commit only when confident. The gap is not a gap in reasoning capability — it is a gap in epistemic discipline.
+Our analysis also reveals why human performance on ARC-AGI-3 is near-perfect (100% solve rate, ARC Prize Foundation 2026) while current AI systems score below 1%. Humans instinctively operate near the Pareto frontier of [Speed, Depth]. They probe efficiently, update their model, and commit only when confident. The gap is not a gap in reasoning capability — it is a gap in epistemic discipline.
 
 ---
 
@@ -37,7 +37,7 @@ Our analysis also reveals why human performance on ARC-AGI-3 is near-perfect (10
 
 ### 2.1 ARC-AGI-3 Task Format
 
-ARC-AGI-3 consists of turn-based environments rendered on 64×64 grids with 16 possible cell values (Bonnet et al., 2026). Each environment has multiple levels; within a level the agent takes a sequence of discrete actions (ACTION1–ACTION5 for directional/control, ACTION6 for cell selection, ACTION7 for Undo) and receives observations (the updated grid state). The environment's win condition is never stated. The agent must infer it.
+ARC-AGI-3 consists of turn-based environments rendered on 64×64 grids with 16 possible cell values (ARC Prize Foundation, 2026). Each environment has multiple levels; within a level the agent takes a sequence of discrete actions (ACTION1–ACTION5 for directional/control, ACTION6 for cell selection, ACTION7 for Undo) and receives observations (the updated grid state). The environment's win condition is never stated. The agent must infer it.
 
 Performance is measured by RHAE (Relative Human Action Efficiency):
 
@@ -87,7 +87,7 @@ $$\text{RHAE}(\pi, E) = \left(\frac{H_E}{A_E(\pi)}\right)^2$$
 
 *Note: We claim RHAE has the mathematical structure of a commutator penalty: it measures the cost of deviating from a Pareto-optimal (Speed, Depth) operating point. This is a structural analogy, not a claim that RHAE is a formal commutator in the Lie algebra sense. The analogy holds because both commutators and RHAE penalties grow quadratically with deviation from the optimal (frontier) point.*
 
-*Proof sketch.* The human baseline $\pi_H$ lies on the Pareto frontier by definition: participants in ARC-AGI-3 calibration had no prior exposure to the environments (Bonnet et al., 2026, §3.2), so their action sequences represent first-contact optimal behavior — the best achievable balance of exploration and execution. A policy $\pi$ that deviates from the frontier — either by under-exploring (low Depth, wasted actions from wrong hypotheses) or over-exploring (low Speed, too many probe actions before acting) — has $A_E(\pi) > H_E$. Since the Pareto frontier is convex (Speed and Depth are concave objectives over the policy space), deviations from the frontier incur second-order losses, yielding the quadratic structure of RHAE. $\square$
+*Proof sketch.* The human baseline $\pi_H$ lies on the Pareto frontier by definition: participants in ARC-AGI-3 calibration had no prior exposure to the environments (ARC Prize Foundation, 2026, §3.2), so their action sequences represent first-contact optimal behavior — the best achievable balance of exploration and execution. A policy $\pi$ that deviates from the frontier — either by under-exploring (low Depth, wasted actions from wrong hypotheses) or over-exploring (low Speed, too many probe actions before acting) — has $A_E(\pi) > H_E$. Since the Pareto frontier is convex (Speed and Depth are concave objectives over the policy space), deviations from the frontier incur second-order losses, yielding the quadratic structure of RHAE. $\square$
 
 **Corollary 1 (Optimal exploration budget).** *The RHAE-maximizing policy allocates an exploration budget*
 
@@ -203,7 +203,7 @@ The `--no-explore` flag (added to `run_eval.py`) sets $B_{\max} = 0$, disabling 
 All experiments were run on Kaggle P100 GPU (16 GB VRAM), model loaded on CPU at FP32.
 The five public ARC-AGI-3 environments are: sb26 ($H_{E,1}=18$), ft09 ($H_{E,1}=43$),
 cd82 ($H_{E,1}=55$), tu93 ($H_{E,1}=19$), r11l ($H_{E,1}=22$), with multi-level
-human baselines from Bonnet et al. (2026). All code is CC0 at `notebooks/arc_agi3_v4_clean.py`.
+human baselines from ARC Prize Foundation (2026). All code is CC0 at `notebooks/arc_agi3_v4_clean.py`.
 
 **Models tested:**
 - **Qwen2.5-0.5B-Instruct** (FP32, CPU): compact baseline; confirms direction of effect
@@ -214,7 +214,7 @@ human baselines from Bonnet et al. (2026). All code is CC0 at `notebooks/arc_agi
   beyond $o_0$, the agent cannot form a hypothesis and takes 0 actions (PLAN requires $hyp \neq \emptyset$).
 - **AERA (adaptive):** Budget $B_{\max} = \max(2, \min(5, \lfloor 0.2 H_{E,1} \rfloor))$.
   Per game: SB26=3, FT09=5, CD82=5, TU93=3, R11L=4.
-- **Metric:** RHAE $= \frac{1}{|G|}\sum_{g} \min(H_{E,g}/A_{E,g}, 1.15)^2$ per Bonnet et al. (2026).
+- **Metric:** RHAE $= \frac{1}{|G|}\sum_{g} \min(H_{E,g}/A_{E,g}, 1.15)^2$ per ARC Prize Foundation (2026).
 
 ### 5.2 Main Results
 
@@ -410,7 +410,7 @@ The B1 condition in v9 additionally confirms that the PLAN phase runs (`phases=[
 
 **Lemma 1.** *The human baseline $H_E$ represents the Pareto-optimal operating point on the [Speed, Depth] frontier for environment $E$.*
 
-*Proof.* Participants in ARC-AGI-3 calibration had no prior exposure to environments (Bonnet et al., 2026, §3.2). Their sequences represent first-contact optimal behavior — the best achievable balance of exploration and execution without task-specific training.
+*Proof.* Participants in ARC-AGI-3 calibration had no prior exposure to environments (ARC Prize Foundation, 2026, §3.2). Their sequences represent first-contact optimal behavior — the best achievable balance of exploration and execution without task-specific training.
 
 Independent empirical evidence from cognitive science supports this characterization of human exploration-first behavior in novel rule-induction tasks: (1) Rule et al. (2020) showed that humans actively query their environment before committing to a hypothesis in program-induction tasks, using an "explore-then-exploit" pattern consistent with near-optimal Bayesian decision-making; (2) Bramley et al. (2017) demonstrated that humans in causal reasoning tasks employ conservative, information-efficient probing strategies — taking fewer exploratory actions than predicted by myopic information-gain — consistent with an implicit cost model for exploratory actions; (3) Tenenbaum \& Griffiths (2001) showed human generalization in rule-learning follows Bayesian posterior updating, which requires the kind of uncertainty representation AERA makes explicit. Together, these results support the claim that human ARC-AGI-3 calibration participants naturally approximate the Pareto-optimal [Speed, Depth] trade-off, as their cognitive architecture has evolved to balance information-gathering cost against execution cost. $\square$
 
@@ -426,11 +426,11 @@ Independent empirical evidence from cognitive science supports this characteriza
 
 ### ARC-AGI Benchmarks
 
-Chollet (2019) introduced ARC as a measure of fluid intelligence targeting the human capacity to acquire new skills from minimal experience. ARC-AGI-1 and ARC-AGI-2 are static benchmarks: observe input-output grid pairs, predict the test output. ARC-AGI-3 (Bonnet et al., 2026) introduces interactivity: agents must *act* to discover rules, without any static pairs. Our work is the first to provide a theoretical account of why the RHAE metric penalizes sub-optimal agents quadratically.
+Chollet (2019) introduced ARC as a measure of fluid intelligence targeting the human capacity to acquire new skills from minimal experience. ARC-AGI-1 and ARC-AGI-2 are static benchmarks: observe input-output grid pairs, predict the test output. ARC-AGI-3 (ARC Prize Foundation, 2026) introduces interactivity: agents must *act* to discover rules, without any static pairs. Our work is the first to provide a theoretical account of why the RHAE metric penalizes sub-optimal agents quadratically.
 
 ### 2025 ARC Prize Winners
 
-Three systems from the 2025 competition are most relevant. "Less is More: Recursive Reasoning with Tiny Networks" (TRM, 1st prize) showed that a 7M-parameter model with recursive self-refinement could achieve competitive ARC-AGI-2 accuracy. "Self-Improving Language Models for Evolutionary Program Synthesis" (SOAR, 2nd prize) proposed self-generated training data via reasoning trace improvement. "CompressARC" (3rd prize) applied Minimum Description Length principles to rule inference. All three operated on the static ARC-AGI-2 benchmark; none addressed interactive environments or RHAE.
+Three systems from the 2025 Paper Award are most relevant. "Less is More: Recursive Reasoning with Tiny Networks" (TRM, Jolicoeur-Martineau 2025, 1st place) showed a 7M-parameter recursive model reaching ~45% on ARC-AGI-1 and ~8% on ARC-AGI-2. "Self-Improving Language Models for Evolutionary Program Synthesis" (SOAR, Pourcel et al. 2025, 2nd place) fine-tunes an LLM on its own search traces, reaching up to ~52% on ARC-AGI-1. "CompressARC" (Liao et al. 2025, 3rd place) applies MDL to single-puzzle code-golf, reaching ~20–34% on ARC-AGI-1 and ~4% on ARC-AGI-2 without pretraining. All three target static ARC-AGI-1/2; none addresses interactive environments or RHAE.
 
 **Connection to TRM.** TRM's recursive refinement (generate → refine → repeat) is structurally analogous to AERA's VERIFY phase. The key architectural difference: TRM refines a complete solution against known input-output pairs (static ARC-AGI-2), while AERA refines a world model through interactive probing (dynamic ARC-AGI-3). TRM can be viewed as a plan-only agent ($B_{\max}=0$) with strong solution refinement; AERA can be viewed as adding a world-model acquisition phase before TRM-style planning. The two approaches are complementary: future work could combine AERA's exploration with TRM's solution refinement to handle both world model uncertainty and solution uncertainty simultaneously.
 
@@ -511,7 +511,7 @@ We release all code and experimental artifacts under CC0. We hope the commutator
 
 ## References
 
-Bonnet, C. et al. (2026). ARC-AGI-3: A New Challenge for Frontier Agentic Intelligence. *arXiv:2603.24621*.
+ARC Prize Foundation. (2026). ARC-AGI-3: A New Challenge for Frontier Agentic Intelligence. *arXiv:2603.24621*.
 
 Chollet, F. (2019). On the Measure of Intelligence. *arXiv:1911.01547*.
 
@@ -537,11 +537,13 @@ Rule, J.S., Tenenbaum, J.B., & Piantadosi, S.T. (2020). The Child as Hacker. *Tr
 
 Tenenbaum, J.B., & Griffiths, T.L. (2001). Generalization, Similarity, and Bayesian Inference. *Behavioral and Brain Sciences, 24*(4), 629-640. *(Supports Lemma 1: human rule-learning follows Bayesian posterior updating — requires uncertainty representation.)*
 
-Jolicoeur-Martineau, A. (2025). Less is More: Recursive Reasoning with Tiny Networks (TRM). *ARC Prize 2025 Technical Report, 1st prize entry.*
+Jolicoeur-Martineau, A. (2025). Less is More: Recursive Reasoning with Tiny Networks. *arXiv:2510.04871*. ARC Prize 2025 Paper Award, 1st place.
 
-Akyürek, E. et al. (2025). Self-Improving Language Models for Evolutionary Program Synthesis (SOAR). *ARC Prize 2025 Technical Report, 2nd prize entry.*
+Pourcel, J. et al. (2025). Self-Improving Language Models for Evolutionary Program Synthesis: A Case Study on ARC-AGI. ARC Prize 2025 Paper Award, 2nd place.
 
-Liu, I. et al. (2025). CompressARC: Minimum Description Length for ARC. *ARC Prize 2025 Technical Report, 3rd prize entry.*
+Liao, I. et al. (2025). CompressARC: An MDL-Based Single-Puzzle Neural System for ARC. ARC Prize 2025 Paper Award, 3rd place.
+
+Chollet, F., Knoop, M., Kamradt, G., & Landers, B. (2026). ARC Prize 2025: Technical Report. *arXiv:2601.10904*.
 
 ---
 
