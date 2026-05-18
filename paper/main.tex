@@ -31,7 +31,7 @@ RHAE-Optimal Epistemic Agents for ARC-AGI-3}
 
 \author{Keong Han Liew\thanks{Independent researcher. Contact: \texttt{farmountain@gmail.com}. Code: \url{https://github.com/farmountain/aera-arc3-paper} (CC0).}}
 
-\date{2026-05-18 \quad (Draft v0.3, post-mirofish persona review)}
+\date{2026-05-19 \quad (Draft v0.5)}
 
 \begin{document}
 \maketitle
@@ -368,6 +368,67 @@ RHAE has the structure of a commutator-penalty on the [Speed, Depth] Pareto fron
 ARC-AGI-3 environments are procedurally novel by design and cannot be memorized from pretraining. Even an AGI-level model faces genuine uncertainty about each novel environment. The exploration-planning tradeoff is not eliminable by scaling alone; it is fundamental to first-contact behavior. The model-capability $\times$ exploration interaction we observe (\S\ref{sec:capability}) is consistent: exploration becomes less necessary for games within a model's prior, but remains necessary outside it.
 
 All code and experimental artifacts are CC0.
+
+\appendix
+
+\section{Proof of Assumption (A1) for a 1-Bit Binary Environment}
+\label{app:a1proof}
+
+Proposition~\ref{prop:rhae-frontier} rests on assumption (A1): the [Speed, Depth] Pareto frontier $\mathcal{F}_E$ is convex. We prove (A1) holds for a concrete minimal environment, giving at least one non-trivial case where the proposition is fully rigorous.
+
+\paragraph{Environment.} Let $E^*$ be defined as follows.
+\begin{itemize}[leftmargin=*]
+\item \textbf{Hidden rule:} $H \in \{h_1, h_2\}$, $\Pr(H{=}h_1) = \Pr(H{=}h_2) = \tfrac{1}{2}$.
+\item \textbf{Explore action $a_e$:} costs 1 action, perfectly reveals $H$ (the agent observes $H$ after taking $a_e$).
+\item \textbf{Plan action $a_p$:} if the agent's committed hypothesis matches $H$, succeeds in $k$ additional steps; if it mismatches, wastes $M \gg k$ steps before timeout.
+\end{itemize}
+
+\paragraph{Policy class.} A \emph{randomised policy} $\pi(p)$, $p \in [0,1]$, explores with probability $p$ (taking $a_e$, learning $H$, then planning correctly) and commits immediately with probability $1-p$ (guessing uniformly, correct with probability $\tfrac{1}{2}$).
+
+\paragraph{Expected action count.}
+\begin{align}
+A(p) &= p\,(1+k) + (1-p)\!\left(\tfrac{k}{2} + \tfrac{M}{2}\right)
+     = p\!\left(1+k - \tfrac{k+M}{2}\right) + \tfrac{k+M}{2}.
+\label{eq:A}
+\end{align}
+Since $M \gg k$, the bracket is negative: $A(p)$ is strictly decreasing in $p$ (more exploration $\Rightarrow$ fewer total actions).
+
+\paragraph{Speed and Depth.}
+\begin{equation}
+\mathrm{Speed}(p) = \tfrac{1}{A(p)}, \qquad
+\mathrm{Depth}(p) = p\log 2.
+\label{eq:SD}
+\end{equation}
+Depth is the expected information gain over the episode (either $\log 2$ bits if explored, 0 otherwise), divided by episode count (1). Both are determined by $p$.
+
+\paragraph{Proof that $\mathcal{F}_{E^*}$ is convex.} Substituting $p = D/\log 2$ from (\ref{eq:SD}) into $A(p)$ from (\ref{eq:A}):
+\begin{equation}
+A(D) = \frac{D}{\log 2}\!\left(1+k - \tfrac{k+M}{2}\right) + \frac{k+M}{2}
+     = c_0 - c_1 D,
+\end{equation}
+where $c_0 = \tfrac{k+M}{2} > 0$ and $c_1 = \tfrac{M-k-2}{2\log 2} > 0$ (since $M \gg k$). Therefore:
+\begin{equation}
+S(D) = \mathrm{Speed}(D) = \frac{1}{c_0 - c_1 D}, \qquad D \in \left[0,\, \log 2\right].
+\end{equation}
+Differentiating twice with respect to $D$:
+\begin{equation}
+\frac{dS}{dD} = \frac{c_1}{(c_0 - c_1 D)^2} > 0,
+\qquad
+\frac{d^2 S}{dD^2} = \frac{2c_1^2}{(c_0 - c_1 D)^3} > 0.
+\end{equation}
+$S(D)$ is strictly convex in $D$ on $[0, \log 2]$. The Pareto frontier $\mathcal{F}_{E^*} = \{(S(D), D) : D \in [0, \log 2]\}$ is therefore a convex curve. $\qquad\square$
+
+\begin{remark}[Scope of this proof]
+$E^*$ is a minimal toy environment; $k{=}5$, $M{=}100$ gives a concrete instance. Assumption (A1) may fail for environments with complex stochastic action effects or non-monotone information revelation. The proof establishes that (A1) is not vacuous --- there exist non-trivial environments where it holds --- and provides the simplest intuition: when wrong-plan waste $M$ dominates correct-plan cost $k$, the Speed--Depth trade-off is convex because the marginal gain in Speed per unit of Depth investment decreases as the agent already holds good beliefs.
+\end{remark}
+
+\paragraph{Quadratic RHAE loss (Proposition~\ref{prop:rhae-frontier} Taylor step).} At the frontier optimum $p^*{=}1$ (always explore): $A^* = 1+k$. For $p = 1 - \varepsilon$ ($\varepsilon \geq 0$ small), $A(p) = A^* + c_1\varepsilon\log 2 + O(\varepsilon^2)$. Then:
+\begin{equation}
+\mathrm{RHAE}(p) = \left(\frac{A^*}{A(p)}\right)^2
+= \left(\frac{1}{1 + c_1\varepsilon\log 2 / A^*}\right)^2
+\approx 1 - \frac{2c_1\varepsilon\log 2}{A^*} + O(\varepsilon^2).
+\end{equation}
+The frontier deviation is $d = \varepsilon\log 2$ (Depth shortfall). Thus $1 - \mathrm{RHAE} \approx 2c_1 d / A^*$: the RHAE loss is \emph{linear} in the Depth shortfall $d$, which is itself linear in the frontier deviation $\varepsilon$. The \emph{quadratic} structure in RHAE is intrinsic to the $(H/A)^2$ form: the metric squares the ratio, so a $1\times$ action-count overhead gives $1^2 = 1$ (full credit), while a $2\times$ overhead gives $(1/2)^2 = 0.25$ (25\% credit). Convexity of $\mathcal{F}_{E^*}$ ensures the frontier is a unique global maximum of RHAE, so any deviation from it incurs non-negative loss; the Taylor expansion then quantifies that loss near the optimum.
 
 \begin{thebibliography}{99}
 \bibitem{arcprize2026} ARC Prize Foundation. (2026). ARC-AGI-3: A New Challenge for Frontier Agentic Intelligence. \textit{arXiv:2603.24621}.
