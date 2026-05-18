@@ -3,7 +3,15 @@
 **Authors:** Keong Han Liew
 **Venue:** ARC Prize 2026 Paper Track
 **Code:** https://github.com/farmountain/aera-arc3-paper (CC0 license)
-**Status:** Draft v0.3 — 2026-05-18. **Canonical version: [`paper/main.tex`](paper/main.tex).** This markdown is the working draft; the LaTeX source contains the v0.3 demotions (Theorem 1 → Proposition under explicit assumption A1, Lemma 1 → Conjecture, Corollary 1 → empirical heuristic) and the FT09 mechanism provenance note. Sync this markdown to .tex before any external distribution.
+**Status:** ⚠️ DEPRECATED WORKING DRAFT — DO NOT USE FOR SUBMISSION.
+
+**Canonical version:** [`paper/main.tex`](paper/main.tex) (v0.6.2, 2026-05-19). All changes since v0.3 are in main.tex only. This markdown has NOT been kept in sync and contains known issues:
+- §8.3 previously contained fabricated AUREUS acronym expansion (now removed)
+- Several overclaims in §9 Conclusion not yet synced from main.tex fixes
+- Old "Theorem 1" stamps not updated to Proposition
+- Old Bonnet/SOAR/CompressARC citations not fully synced
+
+**Do not cite this file. Do not submit this file. main.tex is the submission artifact.**
 
 ---
 
@@ -472,17 +480,9 @@ Chollet (2019) defines intelligence as skill acquisition efficiency normalized b
 
 **Generalization from five environments.** Our primary evaluation uses five public games. These may not be representative of the full 55-environment evaluation set. Results should be interpreted cautiously pending evaluation on the full set.
 
-### 8.3 The AUREUS Connection
+### 8.3 Future Directions
 
-AERA is a minimal instantiation of the AUREUS (Adaptive Unified Reasoning and Execution Under Uncertainty System) cognitive architecture. The full AUREUS design (see companion technical report) specifies a five-layer system:
-
-- **Layer 0 (Invariant Kernel):** Formally verified constraints that survive all self-modifications
-- **Layer 1 (Cognitive Runtime):** The EXPLORE/VERIFY/PLAN loop implemented in AERA
-- **Layer 2 (Agent Skills):** Pluggable capability modules (DSL solvers, visual encoders)
-- **Layer 3 (SecuredClaw Runtime):** Governance, audit, rollback for long-lived autonomous operation
-- **Layer 4 (Adapters):** Environment interfaces (ARC-AGI-3, code execution, web)
-
-AERA exercises Layer 1 and Layer 4. The commutator framework from Section 3 is Layer 1's theoretical foundation. Future work will build the remaining layers, connecting the ARC-AGI-3 findings to long-horizon agent design.
+AERA addresses the minimal instantiation of explore-before-plan for interactive rule-induction. Future work includes: (1) replacing the free-form LLM hypothesis with a structured DSL verified against observations; (2) a dual-model architecture (small model for diverse exploration, large model for planning) to address the model-capability × exploration interaction observed in §5.6; (3) multi-level episodic memory to carry confirmed world models across levels. These directions follow directly from the limitations identified in §8.2.
 
 ### 8.4 Generalization Beyond ARC
 
