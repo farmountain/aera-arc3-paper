@@ -19,8 +19,10 @@
 }
 
 \newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
 \newtheorem{lemma}{Lemma}
 \newtheorem{corollary}{Corollary}
+\newtheorem{conjecture}{Conjecture}
 \newtheorem{remark}{Remark}
 
 \title{Explore Before You Solve:\\
@@ -154,7 +156,7 @@ AERA instantiates the commutator-optimal policy from \S\ref{sec:theory}. Impleme
 
 \paragraph{Episodic memory.} Last-10-step trajectory summary; redundant-probe detection.
 
-\paragraph{No-explore baseline.} \texttt{--no-explore} sets $B_{\max}{=}0$. Directly tests Theorem 1's prediction.
+\paragraph{No-explore baseline.} \texttt{--no-explore} sets $B_{\max}{=}0$. Directly tests Proposition~\ref{prop:rhae-frontier}'s prediction.
 
 \section{Experiments}
 \label{sec:experiments}
@@ -182,7 +184,7 @@ $\Delta$                     & $+$0.2645 &  & \textbf{Primary claim confirmed} \
 \end{tabular}
 \end{table}
 
-\paragraph{Critical finding.} In the corrected B1 baseline, the agent enters PLAN but generates zero actions: it has no world model to plan against. Exploration is structurally necessary for any non-zero RHAE --- exactly as Theorem 1 predicts.
+\paragraph{Critical finding.} In the corrected B1 baseline, the agent enters PLAN but generates zero actions: it has no world model to plan against. Exploration is structurally necessary for any non-zero RHAE --- consistent with Proposition~\ref{prop:rhae-frontier}.
 
 \paragraph{FT09 mechanism.} The 0.5B model's first exploratory action is consistently \texttt{ACTION6} (cell-select), which appears to trigger FT09's win condition. The arc\_agi library logs a non-fatal display error immediately before \texttt{SOLVED} in all four runs. This is consistent with the deliberate-vs-accidental hypothesis (\S\ref{sec:capability}).
 
@@ -213,7 +215,7 @@ R11L & 0.381, 0.834, 0.834, 0.834       & no & rising (probe reveals ambiguity) 
 \label{fig:entropy}
 \end{figure}
 
-Three behavioral classes emerge: (a) rapid convergence (FT09), (b) partial convergence (SB26, TU93, R11L), (c) high-entropy plateau (CD82). Pattern (c) directly demonstrates Theorem 1: when $\mathcal{H}(b)$ does not decrease, RHAE $= 0$.
+Three behavioral classes emerge: (a) rapid convergence (FT09), (b) partial convergence (SB26, TU93, R11L), (c) high-entropy plateau (CD82). Pattern (c) is consistent with Proposition~\ref{prop:rhae-frontier}: when $\mathcal{H}(b)$ does not decrease during EXPLORE, RHAE remains $0$ because the agent never reaches a Speed-mode operating point.
 
 \subsection{Budget Ablation (EXP-003)}
 \label{sec:budget}
