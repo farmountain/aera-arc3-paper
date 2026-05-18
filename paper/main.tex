@@ -50,9 +50,9 @@ ARC-AGI-3 makes this absence costly. In ARC-AGI-3, an agent is placed inside a n
 This paper makes three contributions:
 
 \begin{enumerate}[leftmargin=*]
-\item \textbf{Theoretical: RHAE as commutator measurement.} We show RHAE has the structure of a [Speed, Depth] commutator penalty --- the curvature of the Pareto frontier between action efficiency (Speed) and information gain per action (Depth). The commutator framework predicts exactly why RHAE penalizes inefficiency quadratically.
-\item \textbf{Architectural: AERA.} A three-phase architecture (EXPLORE, VERIFY, PLAN) whose design follows directly from the commutator analysis. The adaptive exploration budget --- approximately 40\% of the human baseline --- is derived from the Pareto-optimal point, not from hyperparameter tuning.
-\item \textbf{Empirical: exploration is necessary.} On five public ARC-AGI-3 games with Qwen2.5-0.5B, AERA achieves $\text{RHAE}{=}0.5290$ vs. $0.0000$ for the no-explore baseline. With Qwen2.5-1.5B the baseline rises to $0.2645$, revealing a model-capability $\times$ exploration interaction.
+\item \textbf{Theoretical: RHAE as commutator-style penalty.} We argue that RHAE has the \emph{structure} of a [Speed, Depth] commutator penalty --- a quadratic cost for deviating from a Pareto frontier between action efficiency (Speed) and information gain per action (Depth). Under an explicit convexity assumption (A1, \S\ref{sec:theory}), this structure predicts the observed quadratic scoring. We do not prove (A1).
+\item \textbf{Architectural: AERA.} A three-phase architecture (EXPLORE, VERIFY, PLAN) motivated by the commutator analysis. The adaptive exploration budget --- approximately 40\% of the human baseline --- is an \emph{empirical heuristic} fit on a small ablation (n=1 environment), not a derived result.
+\item \textbf{Empirical: model $\times$ exploration interaction.} On five public ARC-AGI-3 games with Qwen2.5-0.5B, AERA reaches $\text{RHAE}=0.5290$ versus $0.0000$ for our no-explore baseline (which produces zero actions because the PLAN module requires a non-empty hypothesis --- an architectural choice, not a theorem prediction). At Qwen2.5-1.5B the same no-explore baseline reaches $0.2645$ by solving FT09 through planning alone. Exploration is necessary for the 0.5B model and optional for 1.5B on this 5-game subset.
 \end{enumerate}
 
 The gap between 100\% human solve rate and $<$1\% AI solve rate on ARC-AGI-3 is not a gap in reasoning capability; it is a gap in epistemic discipline.
@@ -140,7 +140,7 @@ AERA uses $\mathcal{H}(b_t)$ as a mode switch:
 \item Commit when $\mathcal{H}(b_t) \leq \theta$: switch to PLAN.
 \end{itemize}
 
-In code, $\mathcal{H}(b_t)$ is approximated by the length of the \texttt{UNCERTAIN:} field of the LLM's structured output --- a calibrated-LLM proxy under monotone-uncertainty assumption \cite{kadavath2022}. Per-step entropy is logged for empirical validation (\S\ref{sec:experiments}).
+In code, $\mathcal{H}(b_t)$ is approximated by the length of the \texttt{UNCERTAIN:} field of the LLM's structured output. This is a weak heuristic proxy: we assume that a well-calibrated LLM writes longer uncertainty descriptions when it is more uncertain, which is consistent with general LLM calibration findings \cite{kadavath2022} but not directly demonstrated for this specific output format. Per-step entropy is logged for qualitative validation (\S\ref{sec:experiments}).
 
 \section{AERA Architecture}
 \label{sec:arch}
@@ -171,7 +171,7 @@ Kaggle P100 GPU (16\,GB VRAM), model on CPU at FP32. Five public ARC-AGI-3 envir
 
 \begin{table}[h]
 \centering
-\caption{Primary claim: AERA vs. no-explore baseline. Confirmed across two independent runs (v4, v9).}
+\caption{AERA vs. no-explore baseline at 0.5B. The AERA condition was replicated across two independent runs (v4, v9); the B1 condition was run once.}
 \label{tab:main}
 \begin{tabular}{lccl}
 \toprule
@@ -184,7 +184,7 @@ $\Delta$                     & $+$0.2645 &  & \textbf{Primary claim confirmed} \
 \end{tabular}
 \end{table}
 
-\paragraph{Critical finding.} In the corrected B1 baseline, the agent enters PLAN but generates zero actions: it has no world model to plan against. Exploration is structurally necessary for any non-zero RHAE --- consistent with Proposition~\ref{prop:rhae-frontier}.
+\paragraph{Architectural note on B1$=$0.} In our corrected B1 baseline, the agent enters PLAN but generates zero actions because the PLAN prompt requires a non-empty \texttt{HYPOTHESIS} field. With no EXPLORE phase, no hypothesis is formed and PLAN refuses to act. This is an implementation choice in AERA's PLAN module, \emph{not} a prediction of Proposition~\ref{prop:rhae-frontier}. A different no-explore baseline that allowed PLAN to act on the initial observation alone would produce a non-zero result; we confirm exactly this in \S\ref{sec:capability} where the 1.5B B1 achieves RHAE $=0.2645$ using its richer prior to plan without exploration. The 0.5B B1 $=0$ result therefore reflects a model-capacity floor on plan-from-prior, not exploration being theoretically necessary.
 
 \paragraph{FT09 mechanism.} The 0.5B model's first exploratory action is consistently \texttt{ACTION6} (cell-select), which appears to trigger FT09's win condition. The arc\_agi library logs a non-fatal display error immediately before \texttt{SOLVED} in all four runs. This is consistent with the deliberate-vs-accidental hypothesis (\S\ref{sec:capability}).
 
@@ -215,7 +215,7 @@ R11L & 0.381, 0.834, 0.834, 0.834       & no & rising (probe reveals ambiguity) 
 \label{fig:entropy}
 \end{figure}
 
-Three behavioral classes emerge: (a) rapid convergence (FT09), (b) partial convergence (SB26, TU93, R11L), (c) high-entropy plateau (CD82). Pattern (c) is consistent with Proposition~\ref{prop:rhae-frontier}: when $\mathcal{H}(b)$ does not decrease during EXPLORE, RHAE remains $0$ because the agent never reaches a Speed-mode operating point.
+Three behavioral classes emerge: (a) rapid convergence (FT09), (b) partial convergence (SB26, TU93, R11L), (c) high-entropy plateau (CD82). Pattern (c) is the empirical worst case: $\mathcal{H}(b)$ does not decrease, so AERA's entropy-gated mode switch never crosses the commitment threshold $\theta$, the PLAN phase is never entered, and RHAE remains $0$. Note this is again driven by the architecture (the threshold $\theta$ gate), not by a theorem.
 
 \subsection{Budget Ablation (EXP-003)}
 \label{sec:budget}
@@ -263,7 +263,7 @@ AERA $b{=}1$         & \textbf{0.5290} & 0.0000 & $+0.5290$ / $-0.2645$ \\
 
 \paragraph{The counter-intuitive result.} 1.5B + $b{=}1$ = $0.0000$ (0/5 solved), worse than both 1.5B B1 (0.2645) and 0.5B $b{=}1$ (0.5290). The 1.5B model's deliberate 1-step exploration misses where the 0.5B model's flatter posterior accidentally hits.
 
-\paragraph{Bayesian framing.} A higher-capability model (1.5B) has a more concentrated posterior over the win condition --- it picks locally optimal actions under its beliefs. A lower-capability model (0.5B) has a flatter posterior, increasing the probability of accidentally triggering an unexpected win condition. The 1.5B is not malfunctioning; its beliefs are pointed at a wrong hypothesis.
+\paragraph{Bayesian framing (hypothesis, not measurement).} One plausible interpretation: a higher-capability model (1.5B) may have a more concentrated action-selection distribution --- it picks more locally ``sensible'' actions under its beliefs --- while a lower-capability model (0.5B) selects more diffusely, increasing the probability of accidentally triggering an unexpected win condition. We did not measure posterior distributions directly; the framing is a post-hoc hypothesis consistent with the data, not a confirmed mechanism. An alternative explanation is simply that 0.5B happens to prefer ACTION6 as a first exploratory action on FT09 for reasons unrelated to posterior entropy.
 
 \paragraph{Implication.} The [Speed, Depth] Pareto frontier is model-dependent. Adaptive budget should account for model capability, not just human baseline. More capable models may be \emph{worse explorers} for environments where wins are serendipitously triggered, while being better planners for deliberate-reasoning environments. An optimal agent combines diverse exploration with capable planning --- not a single large model for both roles.
 
@@ -318,7 +318,7 @@ The [Speed, Depth] commutator is not specific to ARC. Any interactive evaluation
 
 \section{Conclusion}
 
-RHAE is a structural commutator-penalty measurement on the [Speed, Depth] Pareto frontier. This identification explains its quadratic structure, derives the optimal exploration budget from first principles, and motivates AERA as the commutator-optimal agent design. Empirically, agents that skip exploration achieve $\text{RHAE}{=}0.0000$ on 5 public ARC-AGI-3 games while AERA achieves $\text{RHAE}{=}0.5290$. The gain is concentrated where the initial observation is ambiguous --- exactly where the theory predicts exploration is most valuable.
+RHAE has the structure of a commutator-penalty on the [Speed, Depth] Pareto frontier, under an explicit convexity assumption (A1). This structural interpretation motivates AERA as a commutator-aligned agent design and motivates the exploration-budget heuristic ($\alpha \approx 0.4$), though the heuristic is empirically fit, not derived. On this 5-game subset, at 0.5B, agents that skip exploration achieve $\text{RHAE}{=}0.0000$ (because AERA's PLAN module refuses to act without a hypothesis) while AERA achieves $\text{RHAE}{=}0.5290$. At 1.5B, the no-explore baseline reaches $0.2645$ by planning from richer priors, demonstrating that exploration is not universally necessary but depends on model capability and game structure.
 
 ARC-AGI-3 environments are procedurally novel by design and cannot be memorized from pretraining. Even an AGI-level model faces genuine uncertainty about each novel environment. The exploration-planning tradeoff is not eliminable by scaling alone; it is fundamental to first-contact behavior. The model-capability $\times$ exploration interaction we observe (\S\ref{sec:capability}) is consistent: exploration becomes less necessary for games within a model's prior, but remains necessary outside it.
 
