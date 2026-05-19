@@ -454,7 +454,7 @@ Depth is the expected information gain over the episode (either $\log 2$ nats if
 Equation~\ref{eq:SD-appendix} uses a \emph{per-episode} Depth normalisation for algebraic simplicity. The main text (Eq.~\ref{eq:speed-depth}) uses \emph{per-action} normalisation: $\text{Depth} = \mathbb{E}[\Delta\mathcal{H}(b)/a]$ where $a$ is the number of exploration actions. In $E^*$, when the agent explores ($p=1$ case), $a=1$ and $\Delta\mathcal{H} = \log 2$, giving per-action Depth $= \log 2$. Per-episode Depth at $p=1$ is also $\log 2$ (one episode, one action). For general $p$: per-episode Depth $= p\log 2$ (fraction of episodes that explore), while per-action Depth $= \log 2$ (each exploring episode gains $\log 2$ in 1 action). The two normalisations differ by a constant factor $p$ but the convexity proof holds under either normalisation, since $S(D)$ is a strictly convex function of $D$ regardless of how $D$ is scaled by $p$.
 \end{remark}
 
-\paragraph{Proof that $\mathcal{F}_{E^*}$ is convex.} Substituting $p = D/\log 2$ from (\ref{eq:SD}) into $A(p)$ from (\ref{eq:A}):
+\paragraph{Proof that $\mathcal{F}_{E^*}$ is convex.} Substituting $p = D/\log 2$ from (\ref{eq:SD-appendix}) into $A(p)$ from (\ref{eq:A}):
 \begin{equation}
 A(D) = \frac{D}{\log 2}\!\left(1+k - \tfrac{k+M}{2}\right) + \frac{k+M}{2}
      = c_0 - c_1 D,
@@ -504,7 +504,7 @@ The frontier deviation is $d = \varepsilon\log 2$ (Depth shortfall). Thus $1 - \
 \bibitem{wei2022chain} Wei, J.\ et al.\ (2022). Chain-of-Thought Prompting Elicits Reasoning in Large Language Models. \textit{NeurIPS 2022}. \textit{arXiv:2201.11903}.
 \bibitem{yao2023tree} Yao, S.\ et al.\ (2023). Tree of Thoughts: Deliberate Problem Solving with Large Language Models. \textit{NeurIPS 2023}. \textit{arXiv:2305.10601}.
 \bibitem{tolman1948} Tolman, E.C.\ (1948). Cognitive maps in rats and men. \textit{Psychological Review}, 55(4), 189--208.
-\bibitem{okeefe1978} O'Keefe, J.\ \& Nadel, L.\ (1978). \textit{The Hippocampus as a Cognitive Map}. Oxford University Press. *(Supports the claim that spatial exploration precedes route commitment.)*
+\bibitem{okeefe1978} O'Keefe, J.\ \& Nadel, L.\ (1978). \textit{The Hippocampus as a Cognitive Map}. Oxford University Press.
 \end{thebibliography}
 
 \end{document}
