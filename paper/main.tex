@@ -383,6 +383,8 @@ Current LLMs are trained to minimize next-token cross-entropy on text corpora; t
 \item \textbf{LLM hypothesis quality.} Exploration depends on the LLM's ability to form good hypotheses. VERIFY mitigates but does not eliminate this.
 \item \textbf{DSL coverage.} AERA uses free-form LLM hypotheses, not a formal DSL. Mechanical rule-verification against observations is therefore limited.
 \item \textbf{Twenty-five game generalization.} The extended evaluation in \S\ref{sec:extended} now covers all 25 public games (RHAE$=$0.2116, 4/25 solved). The 25 public games may not represent the 55-game private evaluation set. Interpret cautiously.
+\item \textbf{Statistical strength.} Most experiments were run once (EXP-001, EXP-003, EXP-004). EXP-002 was replicated twice and EXP-009 adds a third run of EXP-002, but neither variance estimates nor confidence intervals are reported. With binary solve events and small game counts ($n{=}5$ or $n{=}25$), the reported RHAE values have high variance; we have not estimated it. Future work should report bootstrap confidence intervals over repeated seeded runs.
+\item \textbf{Exploration budget heuristic scope.} The $\alpha \approx 0.4$ heuristic was fit on a single budget ablation ($n{=}1$ environment family, 4 budget values). It should be read as a working value, not a general law. Different environment families, model sizes, or action spaces may require different values; the ablation in \S\ref{sec:extended} ($b{=}1{=}b{=}5$ at 25 games) already shows non-trivial budget sensitivity.
 \end{itemize}
 
 \subsection{Generalization Beyond ARC}
