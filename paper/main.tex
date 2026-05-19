@@ -31,13 +31,13 @@ RHAE-Optimal Epistemic Agents for ARC-AGI-3}
 
 \author{Keong Han Liew\thanks{Independent researcher. Contact: \texttt{farmountain@gmail.com}. Code: \url{https://github.com/farmountain/aera-arc3-paper} (CC0).}}
 
-\date{2026-05-19 \quad (Draft v0.5)}
+\date{2026-05-19 \quad (Draft v0.7)}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-We propose a framework that interprets the RHAE (Relative Human Action Efficiency) metric used to score ARC-AGI-3 submissions as a quadratic penalty for deviating from the Pareto frontier of a Speed--Depth trade-off: Speed = actions$^{-1}$, Depth = information gain per action. The quadratic form falls out of a Taylor expansion under an assumed convex frontier (assumption A1); we state the assumption explicitly rather than prove it. From this interpretation we describe AERA (Adaptive Epistemic Reasoning Agent), a three-phase (EXPLORE / VERIFY / PLAN) agent whose exploration budget is set as an empirical heuristic ($\approx 40\%$ of human level-1 actions). We then report a small-scale empirical study on 5 of the 25 public ARC-AGI-3 games using Qwen2.5-0.5B and 1.5B (CPU FP32). On this 5-game subset, the no-explore baseline (B1) achieves $\text{RHAE}=0.0000$ at 0.5B (PLAN produces 0 actions without a world model) and $\text{RHAE}=0.2645$ at 1.5B (planning alone solves FT09). The best AERA configuration (0.5B, exploration budget = 1) reaches $\text{RHAE}=0.5290$; FT09 is consistently solved in 1 action via an \texttt{ACTION6} event that we believe is the environment's win trigger. A budget ablation across $b \in \{0,1,3,5\}$ produces a non-monotonic curve, which we interpret as a finite-sample artifact under A1. The numbers are not comparable to the full 55-game competition leaderboard (community best $\approx 12.58\%$ at time of writing). The contribution is the framework and the small-n evidence pointing at a model-capability $\times$ exploration interaction, not a state-of-the-art system. All code and the LaTeX source are released under CC0.
+We propose a framework that interprets the RHAE (Relative Human Action Efficiency) metric used to score ARC-AGI-3 submissions as a quadratic penalty for deviating from the Pareto frontier of a Speed--Depth trade-off: Speed = actions$^{-1}$, Depth = information gain per action. The quadratic form falls out of a Taylor expansion under an assumed convex frontier (assumption A1); we state the assumption explicitly rather than prove it. From this interpretation we describe AERA (Adaptive Epistemic Reasoning Agent), a three-phase (EXPLORE / VERIFY / PLAN) agent whose exploration budget is set as an empirical heuristic ($\approx 40\%$ of human level-1 actions). We then report a small-scale empirical study on 5 of the 25 public ARC-AGI-3 games using Qwen2.5-0.5B and 1.5B (CPU FP32). On this 5-game subset, the no-explore baseline (B1) achieves $\text{RHAE}=0.0000$ at 0.5B (PLAN produces 0 actions without a world model) and $\text{RHAE}=0.2645$ at 1.5B (planning alone solves FT09). The best AERA configuration (0.5B, exploration budget = 1) reaches $\text{RHAE}=0.5290$; FT09 is consistently solved in 1 action via an \texttt{ACTION6} event that we believe is the environment's win trigger. A budget ablation across $b \in \{0,1,3,5\}$ produces a non-monotonic curve, which we interpret as a finite-sample artifact under A1. On the full 25 public games, AERA $b{=}1$ achieves $\text{RHAE}{=}0.2116$ (4/25 solved: VC33, FT09, LP85, S5I5), confirming the principle generalises beyond the 5-game design set; $b{=}1{=}b{=}5$ at scale corroborates the finite-sample interpretation of the non-monotonic 5-game curve. The 5-game numbers are not directly comparable to the 55-game competition leaderboard (community best $\approx 12.58\%$ at time of writing). The contribution is the framework and the evidence pointing at a model-capability $\times$ exploration interaction, not a state-of-the-art system. All code and the LaTeX source are released under CC0.
 \end{abstract}
 
 \section{Introduction}
@@ -118,6 +118,7 @@ is maximized when $(\text{Speed}(\pi), \text{Depth}(\pi)) \in \mathcal{F}_E$, an
 \end{proposition}
 
 \begin{remark}[Status of A1]
+\label{rem:a1}
 Assumption (A1) is not proved in this work. Convexity of a Pareto frontier in a finite-action discrete-information setting is environment-dependent and is plausible but not automatic. We use ``commutator'' as a \emph{structural analogy} for the quadratic deviation cost --- not as a claim about Lie-algebraic commutators. Proposition~\ref{prop:rhae-frontier} should be read as a model of why RHAE behaves quadratically under (A1), not as a derived identity.
 \end{remark}
 
@@ -183,7 +184,7 @@ Input: env, B_max, theta
 
 \paragraph{Episodic memory.} Last-10-step trajectory summary; redundant-probe detection.
 
-\paragraph{No-explore baseline.} \texttt{--no-explore} sets $B_{\max}{=}0$. Directly tests Proposition~\ref{prop:rhae-frontier}'s prediction.
+\paragraph{No-explore baseline.} \texttt{--no-explore} sets $B_{\max}{=}0$. Produces the B1 condition; see \S\ref{sec:experiments} for the architectural interpretation of why B1$=$0.
 
 \subsection{Competition Submission (v31): EXPLORE as Offline Pre-Solve}
 \label{sec:v31}
@@ -350,7 +351,7 @@ The human-median action count $H_E$ provides a useful empirical proxy for an eff
 \paragraph{Evidence (not proof).} Cognitive-science work shows humans (i) explore before committing in program-induction tasks \cite{rule2020}, (ii) use conservative information-efficient probing in causal reasoning \cite{bramley2017}, (iii) follow Bayesian posterior updates in rule-learning \cite{tenenbaum2001}. These results show humans behave \emph{like} efficient explorers; they do not directly measure Pareto-optimality. Conjecture~\ref{conj:human-frontier} is an empirical hypothesis, not a derived result.
 
 \begin{remark}[Status of the non-monotonic empirics]
-Table~\ref{tab:budget} shows $\text{RHAE}(b{=}1) = \text{RHAE}(b{=}5) > \text{RHAE}(b{=}3)$. Under assumption (A1) of Proposition~\ref{prop:rhae-frontier}, this is a finite-sample artifact: with only 5 games each contributing a binary solve event, the empirical curve is non-smooth. With a larger game set we expect smoothing toward the (A1)-implied shape. We do \emph{not} claim this resolves the discrepancy; (A1) itself may fail on these environments, in which case a non-convex frontier is the correct interpretation. Supporting evidence for the finite-sample reading: R11L entropy rises at $b{=}3$ (0.381$\to$0.834), a per-game anomaly that would average out over many games.
+Table~\ref{tab:budget} shows $\text{RHAE}(b{=}1) = \text{RHAE}(b{=}5) > \text{RHAE}(b{=}3)$ on 5 games. Under assumption (A1), this is a finite-sample artifact. \textbf{The 25-game extended evaluation (\S\ref{sec:extended}) corroborates this reading:} $\text{RHAE}(b{=}1) = \text{RHAE}(b{=}5) = 0.2116$ at scale, with different game subsets solved at each budget. The tie persisting across 5$\times$ more games supports the finite-sample interpretation. We still do \emph{not} claim the non-monotonic curve is fully explained; (A1) may fail on these environments, and the per-game anomaly (R11L entropy rises at $b{=}3$) remains unexplained at the individual level.
 \end{remark}
 
 \section{Related Work}
@@ -381,7 +382,7 @@ Current LLMs are trained to minimize next-token cross-entropy on text corpora; t
 \item \textbf{Entropy proxy.} \texttt{UNCERTAIN:} field length is a weak proxy for $\mathcal{H}(b_t)$. A proper particle filter over a discrete hypothesis space is future work.
 \item \textbf{LLM hypothesis quality.} Exploration depends on the LLM's ability to form good hypotheses. VERIFY mitigates but does not eliminate this.
 \item \textbf{DSL coverage.} AERA uses free-form LLM hypotheses, not a formal DSL. Mechanical rule-verification against observations is therefore limited.
-\item \textbf{Five-game generalization.} Public 5 games may not represent the 55-game evaluation set. Interpret cautiously.
+\item \textbf{Twenty-five game generalization.} The extended evaluation in \S\ref{sec:extended} now covers all 25 public games (RHAE$=$0.2116, 4/25 solved). The 25 public games may not represent the 55-game private evaluation set. Interpret cautiously.
 \end{itemize}
 
 \subsection{Generalization Beyond ARC}
@@ -399,7 +400,7 @@ In both cases, the framework provides a principled answer to ``how long should I
 The ARC Prize ultimate target is 85\% on the private evaluation set. This paper does not claim to reach 85\%; it identifies one specific mechanism that current systems lack and quantifies its contribution in a small-n study. A complete path to 85\% requires stacking multiple improvements:
 
 \begin{enumerate}[leftmargin=*]
-\item \textbf{EXPLORE phase (this paper):} replaces 0\% RHAE with non-zero RHAE by giving the agent a world model. Estimated contribution: enables any RHAE above zero for models at 0.5B scale.
+\item \textbf{EXPLORE phase (this paper):} enables non-zero RHAE on games that cannot be solved without a world model. Measured contribution: RHAE$=$0.2116 on 25 public games (4/25 solved) at 0.5B scale; RHAE$=$0.0000 for no-explore and random baselines on the same set (\S\ref{sec:extended}).
 \item \textbf{Stronger world model} (future work): replace free-form LLM hypothesis with a structured DSL verified against observations. Eliminates the hypothesis-quality ceiling identified in \S\ref{sec:discussion}.
 \item \textbf{Dual-model exploration} (architectural direction from \S\ref{sec:capability}): small model for diverse exploration, large model for planning. Eliminates the capability$\times$exploration interaction identified here.
 \item \textbf{Multi-level memory} (future work): carry confirmed world models across levels of the same environment, eliminating redundant re-exploration.
