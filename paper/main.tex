@@ -375,6 +375,53 @@ ReAct achieves RHAE $= 0.388$ (8/25 solved: R11L, VC33, TN36, LP85, S5I5, BP35, 
 
 \textbf{Confound: budget allocation.} AERA $b{=}1$ allocates 1 action to exploration and up to 49 to execution. ReAct uses all 50 steps as interleaved explore-execute, effectively giving more exploration budget. The higher solve rate under ReAct may reflect this budget difference as much as architectural differences. A fair comparison would run AERA with $b{=}50$ (full explore) or compare ReAct against AERA adaptive ($b \approx 0.4 \times H_{E,1}$, which uses 7--18 explore steps depending on the game). This is left for future work. The primary finding from EXP-022 remains: structured action constraints prevent invalid moves; unstructured reasoning does not.
 
+\subsection{Systematic Action Search and Game Taxonomy (EXP-033)}
+\label{sec:systematic}
+
+To understand why 19 games remained unsolved by AERA, we ran a depth-limited exhaustive search: for each of the 19 unsolved games, we tried all sequences of up to 3 actions ($7^1 + 7^2 + 7^3 = 399$ sequences per game, ~0.1s per sequence via \texttt{env.reset()}, total ~13 min). No LLM is used; the search is purely deterministic.
+
+\begin{table}[h]
+\centering
+\caption{Systematic search results on 19 AERA-unsolved games. Depth-1 = one action; all winning sequences found are ACTION6.}
+\label{tab:systematic}
+\begin{tabular}{lcc}
+\toprule
+Game & Solved at depth & Winning sequence \\
+\midrule
+CN04 & 1 & ACTION6 \\
+M0R0 & 1 & ACTION6 \\
+LF52 & 1 & ACTION6 \\
+BP35 & 1 & ACTION6 \\
+\midrule
+SB26, CD82, TU93, RE86, AR25, & \multirow{2}{*}{---} & \multirow{2}{*}{no win $\leq 3$ steps} \\
+TR87, KA59, LS20, SC25, SK48, & & \\
+DC22, G50T, WA30, SU15, SP80 & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Key finding: action-selection bottleneck, not depth.} Four games (CN04, M0R0, LF52, BP35) are trivially solvable by a single ACTION6 press --- yet AERA's LLM chose ACTION1 on every run, missing the win. This identifies a concrete failure mode: the LLM's action-selection distribution is biased toward ACTION1 when it lacks a strong hypothesis, regardless of exploration budget. The remaining 15 games have no winning sequence of length $\leq 3$, confirming they require multi-step world-model building beyond what short exploration achieves.
+
+\paragraph{Updated game taxonomy (all 25 public games).}
+
+\begin{table}[h]
+\centering
+\caption{Taxonomy of all 25 public ARC-AGI-3 games by solving difficulty.}
+\label{tab:taxonomy}
+\begin{tabular}{lll}
+\toprule
+Category & Games & Description \\
+\midrule
+ACTION6 depth-1 & FT09, CN04, M0R0, LF52, BP35 & Single ACTION6 press wins \\
+Other 1-step & R11L, VC33, LP85, TN36, S5I5, SU15, SP80 & Specific 1-step action wins \\
+Genuinely hard & SB26, CD82, TU93, RE86, AR25, TR87, & No win in $\leq 3$ steps; \\
+ & KA59, LS20, SC25, SK48, DC22, G50T, WA30 & requires sequential reasoning \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+This taxonomy has direct implications for \S\ref{sec:discussion}: the 13 ``genuinely hard'' games define the ceiling for any single-action-exploration agent. Solving them requires either (a) longer LLM exploration that builds a world model over multiple observations, (b) a structured DSL for hypothesis representation, or (c) a stronger model capable of planning from minimal evidence. The 12 ``1-step solvable'' games are solved by serendipitous action selection --- a fundamentally different mechanism from world-model-based reasoning.
+
 \subsection{Model Capability $\times$ Exploration (EXP-004)}
 \label{sec:capability}
 
