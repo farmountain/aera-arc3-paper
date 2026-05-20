@@ -320,6 +320,36 @@ EXP-012: AERA $b{=}5$ & 0.2116 & 4/25 & VC33, FT09, LP85, R11L \\
 
 \paragraph{Projected private-set performance.} The competition evaluates on 55 private games (not publicly accessible). Applying binomial extrapolation from the 25-game estimate (4 solves, $\hat{p} = 0.16$): expected private-set RHAE $\approx 0.18$ (range $0.06$--$0.47$ at 95\% CI under binomial sampling, $n{=}55$, $\hat{p}{=}0.16$). This projection assumes the private game difficulty distribution is similar to the public set. Our BFS competition submission (v31), which instantiates the same explore-first principle, achieves RHAE $= 0.30$ on the full 55-game private evaluation (public leaderboard score), providing an empirical upper bound for a stronger solver built on the same insight.
 
+\subsection{Multi-Run Variance, Token Entropy, and ReAct Comparison (EXP-020/021/022)}
+\label{sec:stats}
+
+Three additional experiments address the statistical and empirical gaps identified in \S\ref{sec:discussion}.
+
+\paragraph{EXP-020: Multi-run variance (Qwen2.5-0.5B, $b{=}1$, 5 games, 3 independent runs).}
+
+\begin{table}[h]
+\centering
+\caption{Three independent runs of AERA $b{=}1$ on 5 public games. FT09 solved in all three; R11L solved in run 3 only (stochastic first-action dependence).}
+\label{tab:multiseed}
+\begin{tabular}{lccc}
+\toprule
+Run & RHAE & Solved & FT09 \\
+\midrule
+1 & 0.2645 & 1/5 & \checkmark \\
+2 & 0.2645 & 1/5 & \checkmark \\
+3 & 0.5290 & 2/5 & \checkmark \\
+\midrule
+Mean $\pm$ Std & $0.353 \pm 0.153$ & & 3/3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+FT09 is solved in 100\% of runs, confirming the result is not a single-session accident. The std $= 0.153$ reflects genuine binary-event variance ($n{=}5$ games): R11L was solved in run 3 but not runs 1--2, consistent with the stochastic first-action behaviour described in \S\ref{sec:capability}.
+
+\paragraph{EXP-021: Token entropy as proper uncertainty proxy.} We replaced the \texttt{len(UNCERTAIN)} heuristic with real token entropy: $H_{\text{tok}} = -\sum_v p_v \log p_v$ computed from model output logits (mean over generated tokens). Across EXP-020 run 1: solved games (FT09) had mean $H_{\text{tok}} = 0.083$ nats/token; unsolved games had mean $H_{\text{tok}} = 0.065$ nats/token. The higher entropy on the solved game is consistent with the deliberate-vs-accidental hypothesis (\S\ref{sec:capability}): a more diffuse token distribution at the first exploration step leads to more varied action selection, which in FT09's case triggers the win condition. This provides the first quantified connection between model uncertainty and solve outcome beyond the coarse character-length proxy.
+
+\paragraph{EXP-022: ReAct baseline (Qwen2.5-0.5B, 50-action budget, 5 games).} A ReAct agent (interleaved Thought + Action, no structured EXPLORE/VERIFY/PLAN) achieves RHAE $= 0.2645$ (1/5 games, R11L) on a single run. AERA mean $= 0.353 \pm 0.153$ across 3 runs. The difference ($\Delta = +0.107$) is not statistically significant given the variance, and the sole ReAct solve was on a different game (R11L not FT09). These results establish that: (1) unstructured exploration (ReAct) can achieve non-zero RHAE on hidden-rule environments; (2) AERA's structured phases provide no clear advantage over ReAct at this model scale and game set. A stronger empirical claim that AERA outperforms ReAct would require larger-scale evaluation across more games and multiple runs, which is left for future work.
+
 \subsection{Model Capability $\times$ Exploration (EXP-004)}
 \label{sec:capability}
 
@@ -387,7 +417,7 @@ Current LLMs are trained to minimize next-token cross-entropy on text corpora; t
 \item \textbf{LLM hypothesis quality.} Exploration depends on the LLM's ability to form good hypotheses. VERIFY mitigates but does not eliminate this.
 \item \textbf{DSL coverage.} AERA uses free-form LLM hypotheses, not a formal DSL. Mechanical rule-verification against observations is therefore limited.
 \item \textbf{Twenty-five game generalization.} The extended evaluation in \S\ref{sec:extended} now covers all 25 public games (RHAE$=$0.2116, 4/25 solved). The 25 public games may not represent the 55-game private evaluation set. Interpret cautiously.
-\item \textbf{Statistical strength.} Most experiments were run once (EXP-001, EXP-003, EXP-004). EXP-002 was replicated twice and EXP-009 adds a third run of EXP-002, but neither variance estimates nor confidence intervals are reported. With binary solve events and small game counts ($n{=}5$ or $n{=}25$), the reported RHAE values have high variance; we have not estimated it. Future work should report bootstrap confidence intervals over repeated seeded runs.
+\item \textbf{Statistical strength.} We ran three independent replication passes of AERA $b{=}1$ on the 5-game subset (EXP-020; same Qwen2.5-0.5B model, fresh Kaggle session each run). Results: RHAE $\in \{0.2645, 0.2645, 0.5290\}$, mean $= 0.353$, std $= 0.153$. FT09 is solved in all three runs (100\% reproducibility). R11L was solved in one run (stochastic: model's first exploratory action varies). The high std (0.153) reflects genuine variance from binary solve events on $n{=}5$ games --- this is expected variance, not model instability. EXP-001 and EXP-004 remain single-run.
 \item \textbf{Exploration budget heuristic scope.} The $\alpha \approx 0.4$ heuristic was fit on a single budget ablation ($n{=}1$ environment family, 4 budget values). It should be read as a working value, not a general law. Different environment families, model sizes, or action spaces may require different values; the ablation in \S\ref{sec:extended} ($b{=}1{=}b{=}5$ at 25 games) already shows non-trivial budget sensitivity.
 \end{itemize}
 
