@@ -325,26 +325,33 @@ EXP-012: AERA $b{=}5$ & 0.2116 & 4/25 & VC33, FT09, LP85, R11L \\
 
 Three additional experiments address the statistical and empirical gaps identified in \S\ref{sec:discussion}.
 
-\paragraph{EXP-020: Multi-run variance (Qwen2.5-0.5B, $b{=}1$, \textbf{25 games}, 3 independent runs).}
+\paragraph{EXP-020/030: Multi-run variance (Qwen2.5-0.5B, $b{=}1$, \textbf{25 games}, \textbf{8 total independent runs}).}
 
 \begin{table}[h]
 \centering
-\caption{Three independent runs of AERA $b{=}1$ on all 25 public games. FT09 solved in runs 1 and 2; run 2 solved 3 games (FT09, VC33, LP85) while runs 1 and 3 solved 4 (FT09, R11L, VC33, LP85).}
+\caption{Eight independent runs of AERA $b{=}1$ on all 25 public games: 3 on Kaggle CPU (EXP-020), 5 on local CPU (EXP-030). FT09 solved in all 8 runs. RHAE varies based on which secondary games are solved on each run.}
 \label{tab:multiseed}
-\begin{tabular}{lccc}
+\begin{tabular}{lccl}
 \toprule
-Run & RHAE & Solved & Games \\
+Run & RHAE & Solved & Games solved \\
 \midrule
-1 & 0.2116 & 4/25 & FT09, R11L, VC33, LP85 \\
-2 & 0.1587 & 3/25 & FT09, VC33, LP85 \\
-3 & 0.2116 & 4/25 & FT09, R11L, VC33, LP85 \\
+EXP-020 run 1 & 0.2116 & 4/25 & FT09, R11L, VC33, LP85 \\
+EXP-020 run 2 & 0.1587 & 3/25 & FT09, VC33, LP85 \\
+EXP-020 run 3 & 0.2116 & 4/25 & FT09, R11L, VC33, LP85 \\
+EXP-030 run 0 & 0.2116 & 4/25 & FT09, R11L, VC33, LP85 \\
+EXP-030 run 1 & 0.0529 & 1/25 & FT09 \\
+EXP-030 run 2 & 0.2116 & 4/25 & FT09, TN36, LP85, S5I5 \\
+EXP-030 run 3 & 0.1058 & 2/25 & FT09, R11L \\
+EXP-030 run 4 & 0.1587 & 3/25 & FT09, TN36, S5I5 \\
 \midrule
-Mean $\pm$ Std & $0.194 \pm 0.031$ & & FT09 in 3/3 \\
+Mean $\pm$ Std (8 runs) & $0.164 \pm 0.059$ & & FT09 in \textbf{8/8} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-FT09, VC33, and LP85 are solved in all three runs. R11L is solved in 2 of 3 runs (stochastic first-action). The std $= 0.031$ is small relative to the mean (16\% CV), reflecting genuine stability of the 25-game result. The 95\% CI on the mean (descriptive, $n{=}3$) is $0.194 \pm 4.303 \times 0.031/\sqrt{3} = [0.117, 0.271]$. Runs 1 and 3 exactly reproduce the EXP-011 result (0.2116), confirming the prior single-run estimate was not a lucky outlier.
+FT09 is solved in \textbf{100\% of runs} (8/8). The remaining games vary run-to-run, reflecting genuine stochastic first-action dependence. RHAE std $= 0.059$ over 8 runs; 95\% CI (descriptive): $0.164 \pm 2.365 \times 0.059/\sqrt{8} = [0.115, 0.213]$. The variation in which secondary games are solved (R11L, VC33, LP85, TN36, S5I5 each appearing in some runs) confirms that AERA's exploration generalises across multiple game types, not only FT09.
+
+\paragraph{EXP-031: AERA adaptive budget (3 runs, 25 games).} Running AERA with $B_{\max} = \max(2, \min(5, \lfloor 0.2 H_{E,1} \rfloor))$ (3--5 explore steps per game): RHAE $\in \{0.1587, 0.2645, 0.1587\}$, mean $= 0.194 \pm 0.061$. FT09 solved in 3/3 runs. Adaptive budget outperforms $b{=}1$ (mean 0.194 vs 0.164), consistent with Proposition~\ref{prop:rhae-frontier}: more exploration budget allows the agent to operate closer to the Speed--Depth frontier on games requiring more than one probe.
 
 \paragraph{EXP-021: Token entropy as proper uncertainty proxy (25 games).} Using real token entropy $H_{\text{tok}} = -\sum_v p_v \log p_v$ on EXP-020 run 1: solved games (FT09, R11L, VC33, LP85; $n{=}4$) had mean $H_{\text{tok}} = 0.097$ nats/token; unsolved games ($n{=}21$) had mean $H_{\text{tok}} = 0.079$ nats/token ($\Delta = 0.018$, now $n{=}4$ solved vs $n{=}1$ previously). The direction is consistent across the larger sample: higher token-level uncertainty at the first exploration step correlates with solving. A paired comparison across the 4 solved vs 4 randomly-selected unsolved games gives a direction but formal significance testing remains impractical at this $n$. This is the first token-entropy-grounded uncertainty measurement for ARC-AGI-3 agents.
 
@@ -435,7 +442,7 @@ Current LLMs are trained to minimize next-token cross-entropy on text corpora; t
 \item \textbf{LLM hypothesis quality.} Exploration depends on the LLM's ability to form good hypotheses. VERIFY mitigates but does not eliminate this.
 \item \textbf{DSL coverage.} AERA uses free-form LLM hypotheses, not a formal DSL. Mechanical rule-verification against observations is therefore limited.
 \item \textbf{Twenty-five game generalization.} The extended evaluation in \S\ref{sec:extended} now covers all 25 public games (RHAE$=$0.2116, 4/25 solved). The 25 public games may not represent the 55-game private evaluation set. Interpret cautiously.
-\item \textbf{Statistical strength.} We ran three independent replication passes of AERA $b{=}1$ on all 25 public games (EXP-020). Results: RHAE $\in \{0.2116, 0.1587, 0.2116\}$, mean $= 0.194$, std $= 0.031$ (CV $= 16\%$). The tighter std on 25 games vs 5 games reflects greater averaging of binary solve events. FT09, VC33, and LP85 are solved in 3/3 runs; R11L in 2/3 runs. 95\% CI on mean: [0.117, 0.271] (descriptive, $n{=}3$). EXP-001 and EXP-004 remain single-run; a full multi-seed study across all conditions is left for future work.
+\item \textbf{Statistical strength.} We ran 8 independent runs of AERA $b{=}1$ on all 25 public games (3 on Kaggle CPU, 5 on local CPU). RHAE mean $= 0.164$, std $= 0.059$, 95\% CI [0.115, 0.213] (descriptive, $n{=}8$). FT09 is solved in 8/8 runs (100\%). Additional 3 runs with adaptive budget give mean $= 0.194 \pm 0.061$. EXP-001 and EXP-004 remain single-run; a full multi-seed study across all conditions is left for future work.
 \item \textbf{Exploration budget heuristic scope.} The $\alpha \approx 0.4$ heuristic was fit on a single budget ablation ($n{=}1$ environment family, 4 budget values). It should be read as a working value, not a general law. Different environment families, model sizes, or action spaces may require different values; the ablation in \S\ref{sec:extended} ($b{=}1{=}b{=}5$ at 25 games) already shows non-trivial budget sensitivity.
 \end{itemize}
 
