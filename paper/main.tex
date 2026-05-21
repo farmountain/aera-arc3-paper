@@ -435,7 +435,31 @@ EXP-036 (informed exploration) reveals a new tier: 5 games (SB26, CD82, AR25, SK
 \item EXP-038 (multi-trajectory Qwen2.5-1.5B): same protocol with larger model; 0/8 solved. The 1.5B model hallucinates irrelevant game contexts (e.g., ``StarCraft II'' for game SC25), confirming that more model capacity alone does not overcome sparse observation quality.
 \end{itemize}
 
-\textbf{Root bottleneck identified:} the 8 hard games require understanding \emph{what changed visually in the grid} after each action --- information not present in the minimal \texttt{state/levels\_completed/win\_levels} observation our wrapper exposes. A vision-capable model or a structured DSL that encodes grid differences would be needed to solve these games with an LLM-based approach. This is the concrete frontier for future work.
+\textbf{Revised conclusion (EXP-042+): budget constraint, not intelligence gap.} Further investigation reveals that all 8 ``hard'' games are solvable by \emph{simple repeated actions without any LLM} once the budget is sufficient:
+
+\begin{table}[h]
+\centering
+\caption{Winning strategies for the 8 previously-unsolved games. All require only a single action repeated 50--200 times.}
+\label{tab:hard8}
+\begin{tabular}{lll}
+\toprule
+Game & Winning action & Steps \\
+\midrule
+TU93 & ACTION1 repeated & 50 \\
+RE86 & ACTION1 repeated & 100 \\
+TR87 & ACTION1 repeated & 128 \\
+KA59 & ACTION6 at (32,32) & 100 \\
+LS20 & ACTION2 repeated & 129 \\
+SC25 & ACTION6 at (24,48) & 52 \\
+G50T & ACTION1 repeated & 130 \\
+WA30 & ACTION1 repeated & 200 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The reason these games appeared ``hard'' was not insufficient LLM reasoning --- it was that our action budget (50--80 steps) was below the required 52--200 steps. Reading the game metadata confirms: these games have human baseline action counts of 350--1843 total, all tagged as ``keyboard'' or ``keyboard\_click'' interaction types. An agent that simply repeats the correct action sufficiently many times wins every public game.
+
+\textbf{Final result: all 25 public ARC-AGI-3 games are solvable.} The complete taxonomy revises: 10 games solvable in 1 blind step; 5 games solvable with ACTION6 after probing; 2 games need repeated same-action + coordinate or diverse exploration; \emph{8 games solvable by repeated single action with sufficient budget}. No game in the public set requires multi-step hypothesis formation that cannot be replaced by deterministic action repetition. The genuine intelligence challenge lies in the private evaluation set, which may contain games requiring true adaptive reasoning.
 
 \subsection{Model Capability $\times$ Exploration (EXP-004)}
 \label{sec:capability}
