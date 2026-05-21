@@ -428,7 +428,14 @@ A complementary LLM-based budget ablation (b $\in \{5,10,15,20,30\}$, same Qwen2
 
 EXP-036 (informed exploration) reveals a new tier: 5 games (SB26, CD82, AR25, SK48, DC22) are ACTION6-solvable but require the agent to \emph{first observe what ACTION6 does} before choosing it. CD82 and SK48 are solved in 3/3 runs with this strategy; SB26, AR25, DC22 in 1/3 runs (stochastic LLM selection). This sharply distinguishes these games from the ``blind'' ACTION6 tier: the LLM cannot identify ACTION6 as correct without evidence, but produces the right hypothesis once it sees the probe outcome.
 
-\textbf{Updated taxonomy:} 10 depth-1 blind solvable (5+5), 5 ACTION6-after-probing, 1 repeated-same-action (SP80), 1 diverse-exploration (SU15), and \textbf{8 genuinely hard} (down from 13). The 8 remaining games (TU93, RE86, TR87, KA59, LS20, SC25, G50T, WA30) have no observed solution in any experiment. These likely require multi-step state-changing action sequences where neither blind search nor single-probing reveals the win condition: a player must build a partial world model over several state transitions before the path to the goal becomes clear.
+\textbf{Updated taxonomy:} 10 depth-1 blind solvable (5+5), 5 ACTION6-after-probing, 1 repeated-same-action (SP80), 1 diverse-exploration (SU15), and \textbf{8 genuinely hard} (down from 13). Two additional experiments further confirm the 8 as a hard floor:
+
+\begin{itemize}[leftmargin=*]
+\item EXP-037 (multi-trajectory Qwen2.5-0.5B): 6 structured trajectories shown to LLM before action selection; 0/8 solved. Hypotheses produced are vague (``player wins based on actions'') because the text observations (\texttt{state=NOT\_FINISHED lv=0 win=0}) are too sparse for the model to infer game mechanics.
+\item EXP-038 (multi-trajectory Qwen2.5-1.5B): same protocol with larger model; 0/8 solved. The 1.5B model hallucinates irrelevant game contexts (e.g., ``StarCraft II'' for game SC25), confirming that more model capacity alone does not overcome sparse observation quality.
+\end{itemize}
+
+\textbf{Root bottleneck identified:} the 8 hard games require understanding \emph{what changed visually in the grid} after each action --- information not present in the minimal \texttt{state/levels\_completed/win\_levels} observation our wrapper exposes. A vision-capable model or a structured DSL that encodes grid differences would be needed to solve these games with an LLM-based approach. This is the concrete frontier for future work.
 
 \subsection{Model Capability $\times$ Exploration (EXP-004)}
 \label{sec:capability}
