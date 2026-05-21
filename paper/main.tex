@@ -414,13 +414,17 @@ Category & Games & Description \\
 \midrule
 ACTION6 depth-1 (blind) & FT09, CN04, M0R0, LF52, BP35 & Single ACTION6 wins blindly \\
 Other depth-1 (blind) & R11L, VC33, LP85, TN36, S5I5 & Other 1-step blind win \\
-Longer exploration & SU15, SP80 & No blind win $\leq 3$ steps; solved by \\
-(observed, 50 steps) & & ReAct with 50-step budget \\
+Repeated same action & SP80 & No blind win $\leq 3$ steps; solved by \\
+($>3$ steps) & & 30× ACTION1 (LLM ablation b=30) \\
+Longer exploration & SU15 & No blind win $\leq 3$ steps; solved by \\
+(diverse actions) & & ReAct 50-step but not 30× ACTION1 \\
 No solution observed & SB26, CD82, TU93, RE86, AR25, TR87, & No win in any experiment; \\
 ($\leq 50$ steps) & KA59, LS20, SC25, SK48, DC22, G50T, WA30 & requires deeper reasoning \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+A complementary LLM-based budget ablation (b $\in \{5,10,15,20,30\}$, same Qwen2.5-0.5B with always-ACTION1 fallback) solved 2 additional games: BP35 at $b{=}20$ and SP80 at $b{=}30$, both via repeated ACTION1. BP35 was already in the ACTION6 depth-1 tier; SP80 is newly classified as solvable by repeated same action ($>3$ steps). Notably, CN04/M0R0/LF52 remain unsolved even at $b{=}30$ because the LLM never chooses ACTION6, confirming the action-selection bottleneck persists across all budgets when hypothesis is weak.
 
 This taxonomy has direct implications for \S\ref{sec:discussion}. The 10 ``depth-1 blind solvable'' games (5 ACTION6 + 5 other) are won by serendipitous single-action selection --- a fundamentally different mechanism from world-model-based reasoning. SU15 and SP80 occupy a middle tier: no blind ≤3-step win, but solvable with a 50-step interleaved exploration budget (ReAct); these likely require multi-step observation before the win condition becomes obvious. The 13 ``no-solution-observed'' games represent the hardest tier: no win was found in any of our experiments (blind depth-3 or 50-step interleaved). \emph{Note:} ``no observed win'' does not prove these games require arbitrarily deep reasoning --- a depth-4 blind sequence or a different action-ordering could suffice; future work should extend the blind search to depth 5--10. What is established: none of these 13 games are trivially accessible by the exploration strategies tested here.
 
@@ -525,7 +529,7 @@ RHAE has the structure of a commutator-penalty on the [Speed, Depth] Pareto fron
 
 ARC-AGI-3 environments are procedurally novel by design and cannot be memorized from pretraining. Even an AGI-level model faces genuine uncertainty about each novel environment. The exploration-planning tradeoff is not eliminable by scaling alone; it is fundamental to first-contact behavior. The model-capability $\times$ exploration interaction we observe (\S\ref{sec:capability}) is consistent: exploration becomes less necessary for games within a model's prior, but remains necessary outside it.
 
-A depth-limited exhaustive search on 19 consistently-unsolved games reveals the current bottleneck is not insufficient exploration budget but biased action selection: 4 games are trivially solvable by a single ACTION6 press that the LLM systematically avoids when its hypothesis is weak. Of the 25 public games, 10 are accessible via 1-step blind action (no world model needed), 2 require longer exploration, and 13 have no observed solution under any strategy tested here. This taxonomy sharply separates the ``easy-to-accidentally-solve'' tier from games that genuinely require multi-step hypothesis formation --- the latter remain an open challenge for the architecture proposed here and for the field.
+A depth-limited exhaustive search on 19 consistently-unsolved games reveals the current bottleneck is not insufficient exploration budget but biased action selection: 4 games are trivially solvable by a single ACTION6 press that the LLM systematically avoids when its hypothesis is weak. Of the 25 public games, 10 are accessible via 1 blind step, 1 requires 30+ repeated steps, 1 requires diverse longer exploration, and 13 have no observed solution under any strategy tested here. This taxonomy sharply separates the ``easy-to-accidentally-solve'' tier from games that genuinely require multi-step hypothesis formation --- the latter remain an open challenge for the architecture proposed here and for the field.
 
 All code and experimental artifacts are CC0.
 
