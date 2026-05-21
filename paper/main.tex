@@ -400,7 +400,7 @@ DC22, G50T, WA30, SU15, SP80 & & \\
 \end{tabular}
 \end{table}
 
-\paragraph{Key finding: action-selection bottleneck, not depth.} Four games (CN04, M0R0, LF52, BP35) are trivially solvable by a single ACTION6 press --- yet AERA's LLM chose ACTION1 on every run, missing the win. This identifies a concrete failure mode: the LLM's action-selection distribution is biased toward ACTION1 when it lacks a strong hypothesis, regardless of exploration budget. The remaining 15 games have no winning sequence of length $\leq 3$, confirming they require multi-step world-model building beyond what short exploration achieves.
+\paragraph{Key finding: action-selection bottleneck, not depth.} Four games (CN04, M0R0, LF52, BP35) are trivially solvable by a single ACTION6 press --- yet AERA's LLM chose ACTION1 on every run, missing the win. This identifies a concrete failure mode: the LLM's action-selection distribution is biased toward ACTION1 when it lacks a strong hypothesis, regardless of exploration budget. Contrast with FT09, where the model \emph{does} choose ACTION6: FT09's initial grid observation likely activates stronger ACTION6 priors in Qwen2.5-0.5B (possibly from pretraining on grid/click-based UI tasks), while CN04/M0R0/LF52/BP35 have different initial states that do not. This suggests a targeted fix: explicitly try ACTION6 as the first exploration step on any game where the initial observation contains a grid or cell-selection affordance.
 
 \paragraph{Updated game taxonomy (all 25 public games).}
 
@@ -412,15 +412,17 @@ DC22, G50T, WA30, SU15, SP80 & & \\
 \toprule
 Category & Games & Description \\
 \midrule
-ACTION6 depth-1 & FT09, CN04, M0R0, LF52, BP35 & Single ACTION6 press wins \\
-Other 1-step & R11L, VC33, LP85, TN36, S5I5, SU15, SP80 & Specific 1-step action wins \\
-Genuinely hard & SB26, CD82, TU93, RE86, AR25, TR87, & No win in $\leq 3$ steps; \\
- & KA59, LS20, SC25, SK48, DC22, G50T, WA30 & requires sequential reasoning \\
+ACTION6 depth-1 (blind) & FT09, CN04, M0R0, LF52, BP35 & Single ACTION6 wins blindly \\
+Other depth-1 (blind) & R11L, VC33, LP85, TN36, S5I5 & Other 1-step blind win \\
+Longer exploration & SU15, SP80 & No blind win $\leq 3$ steps; solved by \\
+(observed, 50 steps) & & ReAct with 50-step budget \\
+No solution observed & SB26, CD82, TU93, RE86, AR25, TR87, & No win in any experiment; \\
+($\leq 50$ steps) & KA59, LS20, SC25, SK48, DC22, G50T, WA30 & requires deeper reasoning \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-This taxonomy has direct implications for \S\ref{sec:discussion}: the 13 ``genuinely hard'' games define the ceiling for any single-action-exploration agent. Solving them requires either (a) longer LLM exploration that builds a world model over multiple observations, (b) a structured DSL for hypothesis representation, or (c) a stronger model capable of planning from minimal evidence. The 12 ``1-step solvable'' games are solved by serendipitous action selection --- a fundamentally different mechanism from world-model-based reasoning.
+This taxonomy has direct implications for \S\ref{sec:discussion}. The 10 ``depth-1 blind solvable'' games (5 ACTION6 + 5 other) are won by serendipitous single-action selection --- a fundamentally different mechanism from world-model-based reasoning. SU15 and SP80 occupy a middle tier: no blind ≤3-step win, but solvable with a 50-step interleaved exploration budget (ReAct); these likely require multi-step observation before the win condition becomes obvious. The 13 ``no-solution-observed'' games represent the hardest tier: no win was found in any of our experiments (blind depth-3 or 50-step interleaved). \emph{Note:} ``no observed win'' does not prove these games require arbitrarily deep reasoning --- a depth-4 blind sequence or a different action-ordering could suffice; future work should extend the blind search to depth 5--10. What is established: none of these 13 games are trivially accessible by the exploration strategies tested here.
 
 \subsection{Model Capability $\times$ Exploration (EXP-004)}
 \label{sec:capability}
