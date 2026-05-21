@@ -23,6 +23,7 @@
 \newtheorem{lemma}{Lemma}
 \newtheorem{corollary}{Corollary}
 \newtheorem{conjecture}{Conjecture}
+\newtheorem{definition}{Definition}
 \newtheorem{remark}{Remark}
 
 \title{Explore Before You Solve:\\
@@ -56,6 +57,15 @@ This paper makes three contributions:
 \end{enumerate}
 
 The gap between 100\% human solve rate and $<$1\% AI solve rate on ARC-AGI-3 is not a gap in reasoning capability; it is a gap in epistemic discipline.
+
+\begin{center}
+\fbox{\parbox{0.93\linewidth}{\small
+\textbf{Summary for scanning readers.}
+\textbf{(1) Architecture:} AERA (EXPLORE/VERIFY/PLAN) achieves RHAE$=$0.2116 on 25 public games, RHAE$=$0.5290 on 5-game subset, 8/8 runs solve FT09 (100\%).
+\textbf{(2) Theory:} RHAE = $(H/A)^2$ is a commutator-style penalty on the Speed--Depth Pareto frontier (Proposition 1 under A1; A1 proved for UIS environments in Appendix A).
+\textbf{(3) Benchmark critique:} All 25 public games reachable by non-intelligent strategies; public set cannot distinguish exploration from trivial heuristics. Private 55-game set is the genuine test.
+\textbf{Competition:} BFS submission RHAE$=$0.30 on full 55-game eval. Code: CC0.
+}}\end{center}
 
 \paragraph{Relationship to ReAct, Chain-of-Thought, and Tree-of-Thoughts.} ReAct \cite{yao2023react} interleaves reasoning and acting but does not model belief entropy or gate commitment on uncertainty reduction. Chain-of-Thought \cite{wei2022chain} improves planning over a \emph{known} problem but cannot handle hidden rule discovery. Tree-of-Thoughts \cite{yao2023tree} explores solution branches but assumes the problem formulation is fixed, not itself uncertain. AERA differs in one specific way: it maintains an explicit world-model hypothesis and gates the transition from exploration to planning on a proxy for belief entropy. This single architectural choice --- absent from all three prior frameworks --- is what enables non-zero RHAE on environments where the win condition is unknown at episode start. We do not claim AERA is superior to these frameworks on their native tasks; we claim it addresses a \emph{different} problem (hidden-rule interactive environments) that those frameworks were not designed for.
 
