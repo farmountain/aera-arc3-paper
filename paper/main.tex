@@ -31,7 +31,7 @@ RHAE-Optimal Epistemic Agents for ARC-AGI-3}
 
 \author{Keong Han Liew\thanks{Independent researcher. Contact: \texttt{farmountain@gmail.com}. Code: \url{https://github.com/farmountain/aera-arc3-paper} (CC0).}}
 
-\date{2026-05-21 \quad (Draft v1.3)}
+\date{2026-05-21 \quad (Draft v2.1)}
 
 \begin{document}
 \maketitle
@@ -418,8 +418,8 @@ ACTION6 after probing & SB26, CD82, AR25, SK48, DC22 & ACTION6 wins after LLM se
 (EXP-036) & & action-effect observations \\
 Repeated ACTION1 & SP80 & 30+ ACTION1 presses (b=30) \\
 Diverse exploration & SU15 & ReAct 50-step; not ACTION1-solvable \\
-No solution observed & TU93, RE86, TR87, KA59, LS20, & No win in any experiment \\
-(9 games) & SC25, G50T, WA30 & (hardest tier) \\
+Budget-constrained & TU93, RE86, TR87, KA59, LS20, & Single action $\times$50--200 steps; \\
+(keyboard/click) & SC25, G50T, WA30 & no LLM needed (see §\ref{sec:systematic}) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -575,7 +575,7 @@ RHAE has the structure of a commutator-penalty on the [Speed, Depth] Pareto fron
 
 ARC-AGI-3 environments are procedurally novel by design and cannot be memorized from pretraining. Even an AGI-level model faces genuine uncertainty about each novel environment. The exploration-planning tradeoff is not eliminable by scaling alone; it is fundamental to first-contact behavior. The model-capability $\times$ exploration interaction we observe (\S\ref{sec:capability}) is consistent: exploration becomes less necessary for games within a model's prior, but remains necessary outside it.
 
-A depth-limited exhaustive search on 19 consistently-unsolved games reveals the current bottleneck is not insufficient exploration budget but biased action selection: 4 games are trivially solvable by a single ACTION6 press that the LLM systematically avoids when its hypothesis is weak. Of the 25 public games: 10 are accessible via 1 blind step; 5 are ACTION6-solvable after observing action effects; 1 requires repeated same action (30+ steps); 1 requires diverse longer exploration; and 8 have no observed solution under any strategy tested here. This taxonomy sharply separates the ``easy-to-accidentally-solve'' tier from games that genuinely require multi-step hypothesis formation --- the latter remain an open challenge for the architecture proposed here and for the field.
+A depth-limited exhaustive search on 19 consistently-unsolved games reveals the primary bottleneck is biased action selection: 4 games are trivially solvable by a single ACTION6 press that the LLM systematically avoids. Further investigation shows all 25 public games are reachable through non-intelligent means: 10 in 1 blind step; 5 after probing; 1 via repeated ACTION1; 1 via diverse exploration; and 8 via sufficient budget (50--200 repeated single actions). A library-level null-coordinate vulnerability additionally bypasses 18 games in 1 step. None of these strategies require multi-step hypothesis formation. The genuine intelligence challenge --- discovering the winning strategy \emph{from scratch} in a novel private-set environment --- remains open, and is exactly the problem AERA's EXPLORE-before-PLAN architecture addresses.
 
 All code and experimental artifacts are CC0.
 
