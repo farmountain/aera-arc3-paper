@@ -37,7 +37,7 @@ Code, draft, and figures are released under CC0:
 https://github.com/farmountain/aera-arc3-paper
 
 I am requesting endorsement for arxiv submission to `cs.AI`. My endorsement
-code is **[paste 6-character code from arxiv]**.
+code is **4SE4MM**.
 
 I selected you because [one specific reason: e.g., "you co-authored the
 ARC-AGI-3 specification paper", or "your work on probabilistic program
@@ -65,7 +65,7 @@ I hope this finds you well. I am writing to request endorsement for my
 first arxiv submission in `cs.AI`.
 
 **Paper.** *Explore Before You Solve: The [Speed, Depth] Commutator and
-RHAE-Optimal Epistemic Agents for ARC-AGI-3* (Draft v0.2, 2026-05-17).
+RHAE-Optimal Epistemic Agents for ARC-AGI-3* (Draft v2.4, 2026-05-22).
 
 **Contributions.**
 1. *Theoretical.* RHAE — the metric used by ARC Prize 2026 to score
@@ -97,7 +97,7 @@ work."]
 
 **Request.** I am asking for endorsement to submit to `cs.AI` (with
 cross-list to `cs.LG`). My arxiv endorsement code is
-**[paste 6-character code]**. I have read the arxiv endorsement guidelines
+**4SE4MM**. I have read the arxiv endorsement guidelines
 and understand the endorser's responsibility is only to confirm that the
 paper is a legitimate academic contribution.
 
@@ -142,7 +142,7 @@ Order by likelihood of response (closer ties first):
    - `paper/figures/figure3_entropy.pdf`
 3. Title: `Explore Before You Solve: The [Speed, Depth] Commutator and
    RHAE-Optimal Epistemic Agents for ARC-AGI-3`
-4. Comments field: `Open-source code: https://github.com/farmountain/aera-arc3-paper (CC0). 9 pages, 2 figures.`
+4. Comments field: `Open-source code: https://github.com/farmountain/aera-arc3-paper (CC0). 22 pages, 3 figures.`
 5. Submit. arxiv announces the paper at 20:00 UTC the next working day.
 
 ---
@@ -155,5 +155,5 @@ Mirror the submission at:
 - https://github.com/farmountain/aera-arc3-paper (already public — primary
   novelty timestamp is the git commit, not arxiv announcement)
 
-The git commit `b4a159e` on 2026-05-18 establishes priority regardless of
+The git commit `ac98f58` on 2026-05-22 establishes priority regardless of
 arxiv timing.
