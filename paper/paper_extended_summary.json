@@ -1,0 +1,12 @@
+{
+  "prior_5game": {
+    "EXP-001 B1 0.5B (5 games)": 0.0,
+    "EXP-002 AERA adaptive 0.5B (5 games)": 0.2645,
+    "EXP-003 b=1 0.5B (5 games)": 0.529
+  },
+  "exp010_random_5game": 0.0,
+  "exp011_aera_b1_all": 0.0,
+  "exp012_b0_all": 0.0,
+  "exp012_b1_all": 0.0,
+  "n_games_all": 5
+}
